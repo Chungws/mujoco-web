@@ -41,12 +41,12 @@ setup:
 	@echo "  1. Copy environment file: cp .env.example .env"
 	@echo "  2. Start services: make dev"
 
-# Start infrastructure (PostgreSQL + MinIO)
+# Start infrastructure (PostgreSQL + MongoDB)
 dev-infra:
-	@echo "🚀 Starting infrastructure (PostgreSQL + MinIO)..."
+	@echo "🚀 Starting infrastructure (PostgreSQL + MongoDB)..."
 	docker compose --profile dev up -d
 	@echo "✅ PostgreSQL started on localhost:5432"
-	@echo "✅ MinIO started on localhost:9000 (API) and localhost:9001 (Console)"
+	@echo "✅ MongoDB started on localhost:27017"
 
 # Start Backend (requires PostgreSQL)
 dev-backend:
@@ -156,9 +156,8 @@ prod:
 	@echo "🔗 Services:"
 	@echo "  Frontend:  http://localhost:3000"
 	@echo "  Backend:   http://localhost:8000"
-	@echo "  MinIO API: http://localhost:9000"
-	@echo "  MinIO Console: http://localhost:9001"
-	@echo "  Postgres:  localhost:5432"
+	@echo "  PostgreSQL: localhost:5432"
+	@echo "  MongoDB:   localhost:27017"
 	@echo ""
 	@echo "📊 Check status: docker compose ps"
 	@echo "📋 View logs:    make prod-logs"
