@@ -12,7 +12,7 @@ A web-based arena for comparing VLA models through blind A/B testing with robot 
 |----------|---------|
 | **Project Name** | VLA Arena (mujoco-web) |
 | **Repository** | mujoco-web |
-| **Tech Stack** | Next.js 15, FastAPI, PostgreSQL, MuJoCo, Ray, vLLM/TGI |
+| **Tech Stack** | Next.js 15, FastAPI, PostgreSQL, MongoDB, MuJoCo |
 | **Architecture** | Stateless microservices |
 | **Development Start** | 2025-01 |
 | **Status** | MVP Development |
@@ -71,16 +71,16 @@ See [ADR-001](./ARCHITECTURE/ADR_001-Server_Side_Execution.md) for details.
 
 ```
 User Flow:
-1. Select Robot (WidowX/Franka/UR5) + Scene (Table/Kitchen/Warehouse)
+1. Select Robot (WidowX) + Scene (Table)
 2. System assigns 2 anonymous VLA models
 3. User provides instruction
-4. Server generates 50-step episodes (5 seconds each)
-5. User watches side-by-side videos
-6. User votes (A/B/Tie)
+4. Server generates episodes (up to 50 steps, variable length)
+5. User replays episodes side-by-side (MuJoCo WASM state replay)
+6. User votes (A/B/Tie/Both Bad)
 7. Models revealed, ELO updated
 ```
 
-**Episode = 50 steps = 5 seconds @ 10Hz control**
+**Episode = up to 50 steps (variable) = up to 5 seconds @ 10Hz control**
 
 ### 3. Blind A/B Testing
 
@@ -108,41 +108,40 @@ Implementation:
 ## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│         Frontend (Next.js)                   │
-│  - Robot/Scene selector                      │
-│  - Instruction input                         │
-│  - Side-by-side video players               │
-│  - Vote buttons (A/B/Tie)                    │
-│  - Session history (past battles)            │
-│  - Leaderboard (ELO rankings)                │
-└──────────────────┬──────────────────────────┘
+┌───────────────────────────────────────────────┐
+│         Frontend (Next.js)                     │
+│  - Robot/Scene selector                        │
+│  - Instruction input                           │
+│  - Side-by-side MuJoCo WASM viewers            │
+│  - Vote buttons (A/B/Tie/Both Bad)             │
+│  - Leaderboard (Robot-specific + Global ELO)   │
+└──────────────────┬────────────────────────────┘
                    │ HTTP REST API
-     ┌─────────────▼─────────────────────────┐
-     │   Orchestrator (FastAPI, Stateless)    │
-     │   - Session management                 │
-     │   - Episode coordination               │
-     │   - Vote processing                    │
-     └──────┬──────────────┬──────────────────┘
+     ┌─────────────▼──────────────────────────┐
+     │   Backend (FastAPI)                     │
+     │   - Session management                  │
+     │   - VLA execution (server-side)         │
+     │   - Episode storage (MongoDB)           │
+     │   - Vote processing                     │
+     └──────┬──────────────┬───────────────────┘
+            │              │
             │              │
    ┌────────▼────────┐  ┌─▼──────────────────┐
-   │ VLA Inference   │  │ Environment Workers │
-   │ (vLLM/TGI)      │  │ (Ray, Stateless)    │
+   │ VLA Models      │  │ MuJoCo Simulation   │
+   │ (Server-side)   │  │ (Server-side)       │
    │                 │  │                     │
-   │ - OpenVLA 7B    │  │ MuJoCo Episodes:    │
-   │ - RT-2          │  │ 1. Restore state    │
-   │ - Octo          │  │ 2. Run 50 steps     │
-   │ - Auto-batching │  │ 3. Record trajectory │
-   │                 │  │ 4. Generate video   │
+   │ - OpenVLA 7B    │  │ 1. Run episode      │
+   │ - Octo-base     │  │ 2. Record states    │
+   │                 │  │ 3. Save to MongoDB  │
    └─────────────────┘  └─────────────────────┘
             │                      │
             └──────────┬───────────┘
                        │
-            ┌──────────▼───────────┐
-            │   Storage & Database  │
-            │   - PostgreSQL        │
-            │   - S3/MinIO (videos) │
-            └──────────┬────────────┘
+            ┌──────────▼───────────────┐
+            │   Storage & Database      │
+            │   - PostgreSQL (metadata) │
+            │   - MongoDB (episodes)    │
+            └──────────┬────────────────┘
                        │
             ┌──────────▼───────────┐
             │   Worker (Python)     │
@@ -153,43 +152,45 @@ Implementation:
 
 ### Key Components
 
-#### 1. Orchestrator (FastAPI)
-- **Stateless**: No in-memory sessions
-- **API Gateway**: Coordinates all requests
-- **Endpoints:**
-  - `POST /session/init` - Create session, assign models
-  - `POST /session/execute` - Generate episode
-  - `POST /session/vote` - Submit vote
-  - `GET /leaderboard` - Get rankings
+#### 1. Backend (FastAPI)
+- **Session Management**: Create session, assign random models
+- **VLA Execution**: Server-side inference (OpenVLA, Octo)
+- **MuJoCo Simulation**: Server-side physics simulation
+- **Episode Storage**: Save to MongoDB
+- **API Endpoints:**
+  - `POST /api/sessions/init` - Create session + battle
+  - `POST /api/battles/{id}/turns` - Execute VLA models
+  - `POST /api/votes` - Submit vote
+  - `GET /api/leaderboard` - Get rankings
 
-#### 2. Environment Workers (Ray Serve)
-- **Stateless**: State passed in request
-- **MuJoCo Simulation**: dm_control or mujoco-py
+#### 2. MuJoCo Simulation (Server-side)
 - **Episode Generation:**
   ```python
-  1. Decode base64 state
-  2. Restore MuJoCo environment
-  3. Loop 50 steps:
-     - Get observation
-     - Call VLA model
-     - Apply action
-     - Record frame
-  4. Encode video
-  5. Upload to S3
-  6. Return new state + video URL
+  1. Load robot + scene
+  2. Loop up to 50 steps:
+     - Get observation (camera image + proprioception)
+     - Call VLA model inference
+     - Apply action to simulation
+     - Record state (qpos, qvel, time)
+  3. Save episode to MongoDB (actions, states, metrics)
+  4. Return episode_id
   ```
 
-#### 3. VLA Inference (vLLM/TGI)
-- **Auto-batching**: Automatically batch multiple requests
-- **GPU Optimized**: Efficient inference
-- **Model Serving**: Multiple models simultaneously
+#### 3. Storage
+- **PostgreSQL**: Sessions, battles, turns, votes, model_stats
+- **MongoDB**: Episodes (actions[], states[], metrics)
+  - ~13 KB per episode (max 50 steps)
+  - Indexed by episode_id, battle_id, turn_id
 
-#### 4. Storage
-- **PostgreSQL**: Sessions, episodes, votes, model stats
-- **S3/MinIO**: Video files, trajectory data
+#### 4. Frontend Replay (MuJoCo WASM)
+- Load episode states from MongoDB
+- MuJoCo WASM renders state-by-state
+- Interactive: scrub timeline, rotate camera
+- No video files needed
 
 #### 5. Worker
 - **Hourly Aggregation**: ELO calculation
+- **Robot-specific ELO**: Separate rankings per robot
 - **Bradley-Terry**: Confidence intervals
 
 ---
@@ -228,7 +229,7 @@ Implementation:
 ### Prerequisites
 - **Python**: 3.11+
 - **Node.js**: 18+
-- **Docker**: For PostgreSQL, MinIO
+- **Docker**: For PostgreSQL, MongoDB
 - **GPU**: NVIDIA GPU with CUDA (for VLA inference)
 
 ### Setup (MVP)
@@ -242,7 +243,7 @@ cd mujoco-web
 uv sync
 
 # 3. Start infrastructure
-make dev-infra  # PostgreSQL + MinIO in Docker
+make dev-infra  # PostgreSQL + MongoDB in Docker
 
 # 4. Run database migrations
 make migrate
@@ -264,7 +265,7 @@ make dev-worker
 ```bash
 make help         # Show all commands
 make setup        # Initial setup
-make dev-infra    # Start PostgreSQL + MinIO
+make dev-infra    # Start PostgreSQL + MongoDB
 make dev-backend  # Start FastAPI
 make dev-frontend # Start Next.js
 make dev-worker   # Start ELO worker
@@ -340,55 +341,131 @@ mujoco-web/
 
 ## 🗄️ Database Schema
 
+**See:** [ADR-002: Database Schema](./ARCHITECTURE/ADR_002-Database_Schema.md) for complete specification
+
+### PostgreSQL Tables
+
 ```sql
--- Session
+-- Sessions (robot + scene selection)
 CREATE TABLE sessions (
     id SERIAL PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    robot_type TEXT NOT NULL,
-    scene_type TEXT NOT NULL,
-    model_a_id TEXT NOT NULL,
-    model_b_id TEXT NOT NULL,
-    status TEXT DEFAULT 'active',
-    vote TEXT,  -- 'A', 'B', 'Tie'
+    session_id TEXT UNIQUE NOT NULL,
+    robot_id TEXT NOT NULL,      -- "widowx", "franka", "ur5"
+    scene_id TEXT NOT NULL,      -- "table", "kitchen", "warehouse"
+    user_id TEXT,                -- Anonymous UUID (optional)
     created_at TIMESTAMP,
-    completed_at TIMESTAMP
+    last_active_at TIMESTAMP
 );
 
--- Episode (one per instruction in a session)
-CREATE TABLE episodes (
+-- Battles (two models compete)
+CREATE TABLE battles (
     id SERIAL PRIMARY KEY,
-    session_id INT NOT NULL,  -- No FK!
-    instruction TEXT NOT NULL,
-    model_a_state TEXT,       -- base64 MuJoCo state
-    model_b_state TEXT,
-    model_a_video_url TEXT,
-    model_b_video_url TEXT,
-    model_a_steps JSONB,      -- Trajectory data
-    model_b_steps JSONB,
+    battle_id TEXT UNIQUE NOT NULL,
+    session_id TEXT NOT NULL,    -- No FK!
+    seq_in_session INT NOT NULL, -- Order in session
+    left_model_id TEXT NOT NULL,
+    right_model_id TEXT NOT NULL,
+    status TEXT DEFAULT 'ongoing',
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- Turns (user instructions)
+CREATE TABLE turns (
+    id SERIAL PRIMARY KEY,
+    turn_id TEXT UNIQUE NOT NULL,
+    session_id TEXT NOT NULL,
+    battle_id TEXT NOT NULL,
+    battle_seq_in_session INT NOT NULL,
+    seq INT NOT NULL,            -- Turn order in battle
+    instruction TEXT NOT NULL,   -- Natural language command
     created_at TIMESTAMP
 );
 
--- Model Stats
-CREATE TABLE model_stats (
-    model_id TEXT PRIMARY KEY,
-    robot_type TEXT,
-    scene_type TEXT,
-    elo_rating FLOAT DEFAULT 1500,
-    elo_ci_lower FLOAT,
-    elo_ci_upper FLOAT,
+-- Votes (denormalized for worker performance)
+CREATE TABLE votes (
+    id SERIAL PRIMARY KEY,
+    vote_id TEXT UNIQUE NOT NULL,
+    battle_id TEXT UNIQUE NOT NULL, -- 1:1 relationship
+    session_id TEXT NOT NULL,
+    robot_id TEXT NOT NULL,         -- Denormalized
+    scene_id TEXT NOT NULL,         -- Denormalized
+    left_model_id TEXT NOT NULL,    -- Denormalized
+    right_model_id TEXT NOT NULL,   -- Denormalized
+    vote TEXT NOT NULL,             -- "left_better", "right_better", "tie", "both_bad"
+    processing_status TEXT DEFAULT 'pending',
+    processed_at TIMESTAMP,
+    voted_at TIMESTAMP
+);
+
+-- Robot-specific ELO
+CREATE TABLE model_stats_by_robot (
+    id SERIAL PRIMARY KEY,
+    model_id TEXT NOT NULL,
+    robot_id TEXT NOT NULL,
+    elo_score INT DEFAULT 1500,
+    elo_ci FLOAT DEFAULT 200.0,
     vote_count INT DEFAULT 0,
-    win_rate FLOAT,
+    win_count INT DEFAULT 0,
+    loss_count INT DEFAULT 0,
+    tie_count INT DEFAULT 0,
+    win_rate FLOAT DEFAULT 0.0,
+    updated_at TIMESTAMP,
+    UNIQUE(model_id, robot_id)
+);
+
+-- Global ELO
+CREATE TABLE model_stats_total (
+    id SERIAL PRIMARY KEY,
+    model_id TEXT UNIQUE NOT NULL,
+    elo_score INT DEFAULT 1500,
+    elo_ci FLOAT DEFAULT 200.0,
+    vote_count INT DEFAULT 0,
+    win_count INT DEFAULT 0,
+    loss_count INT DEFAULT 0,
+    tie_count INT DEFAULT 0,
+    win_rate FLOAT DEFAULT 0.0,
+    organization TEXT,
+    license TEXT,
     updated_at TIMESTAMP
 );
 
 -- Worker Status
 CREATE TABLE worker_status (
     id SERIAL PRIMARY KEY,
-    last_run TIMESTAMP,
+    worker_name TEXT UNIQUE NOT NULL,
+    last_run_at TIMESTAMP,
     status TEXT,
-    votes_processed INT
+    votes_processed INT,
+    error_message TEXT
 );
+```
+
+### MongoDB Collection
+
+```javascript
+// episodes collection (~13 KB per episode)
+{
+  episode_id: "ep_abc123",
+  session_id: "sess_def456",
+  battle_id: "battle_ghi789",
+  turn_id: "turn_jkl012",
+  side: "left",  // or "right"
+  model_id: "openvla-7b",
+  actions: [[0.1, 0.2, ...], ...],  // Variable length, up to 50
+  states: [
+    {qpos: [...], qvel: [...], time: 0.0},
+    ...
+  ],  // Variable length
+  metrics: {
+    success: true,
+    total_steps: 35,
+    max_steps: 50,
+    final_distance_to_goal: 0.05
+  },
+  duration_ms: 5120,
+  created_at: ISODate(...)
+}
 ```
 
 **Note:** No foreign key constraints (following lmarena-clone pattern)
