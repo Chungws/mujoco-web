@@ -1,0 +1,3 @@
+"""
+Aggregation logic for worker
+"""
