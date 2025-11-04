@@ -4,70 +4,34 @@ This directory contains feature specifications for the VLA Arena platform.
 
 ---
 
-## 📋 Current Features
+## 📋 Active Features
 
-### MVP: VLA Arena (In Progress)
+### 001_MVP.md - VLA Arena MVP
 
-**Status:** Week 2 - Backend Foundation
-**Target:** Week 7 completion
+**Status:** Week 2 - Backend Foundation (In Progress)
+**Timeline:** Week 1-7 (7 weeks total)
 **Priority:** HIGH
 
 **Description:**
-Complete VLA model comparison platform with blind A/B testing, episode generation, video playback, voting, and ELO-based leaderboard.
+Complete VLA model comparison platform with blind A/B testing, server-side episode generation, browser-based replay, voting, and robot-specific ELO leaderboard.
 
-**Key Components:**
-- Session management (random model assignment)
-- Episode generation (50-step server-side execution)
-- Side-by-side video playback
-- Voting system (A/B/Tie)
-- ELO leaderboard with confidence intervals
-- Hourly aggregation worker
-
-**Scope:**
+**MVP Scope:**
 - 1 robot (WidowX)
-- 1 scene (Table)
+- 1 scene (Table pick-and-place)
 - 2 VLA models (OpenVLA 7B, Octo-base)
+- Session management + Multi-turn battles
+- State-based episode replay (MuJoCo WASM)
+- Voting system (A/B/Tie/Both Bad)
+- Robot-specific + Global ELO rankings
+- Hourly worker aggregation
 
-**See:** [../ROADMAP.md](../ROADMAP.md) for detailed breakdown
+**Key Decisions:**
+- All server-side execution (MuJoCo + VLA inference) - [ADR-001](../ARCHITECTURE/ADR_001-Server_Side_Execution.md)
+- PostgreSQL + MongoDB hybrid - [ADR-002](../ARCHITECTURE/ADR_002-Database_Schema.md)
+- State-based replay (not video) for interactive debugging
+- Robot-specific ELO for fair comparisons
 
----
-
-## 🗂️ Archived Specifications
-
-The following documents represent earlier planning phases before the MVP specification was finalized. They are kept for historical reference.
-
-### 001_VLA_VISUALIZATION.md (Archived)
-
-**Original Plan:** Phase 1 - Visualization only
-**Status:** Superseded by integrated MVP approach
-**Date:** 2025-11-01
-
-**Why Archived:**
-- Original plan separated visualization (Phase 1) from comparison (Phase 2)
-- New specification integrates both into unified MVP
-- Benchmark results (283ms VLA inference) confirmed all server-side architecture
-- lmarena-clone structure adopted for faster development
-
-**Useful Sections:**
-- Plugin architecture concepts (adapted to MVP)
-- MuJoCo integration details
-- Technical specifications (still relevant)
-
-### 002_MODEL_COMPARISON.md (Archived)
-
-**Original Plan:** Phase 2 - Battle system
-**Status:** Integrated into MVP
-**Date:** 2025-11-01
-
-**Why Archived:**
-- Battle system now part of MVP (not separate phase)
-- Database schema refined based on lmarena-clone
-- ELO system directly adopted from reference project
-
-**Useful Sections:**
-- Battle flow (now called "sessions" and "episodes")
-- ELO calculation details
-- Leaderboard requirements
+**See:** [001_MVP.md](./001_MVP.md) for complete specification
 
 ---
 
@@ -75,37 +39,40 @@ The following documents represent earlier planning phases before the MVP specifi
 
 These features are planned for post-MVP releases:
 
-### Expansion: More Content
+### Phase 2: Content Expansion
 - **Priority:** High
 - **Features:**
   - Additional robots (Franka, UR5)
   - Additional scenes (Kitchen, Warehouse)
-  - More VLA models (RT-2, etc.)
+  - 5-10 more VLA models (RT-2, etc.)
+  - Scene-specific ELO rankings
 
-### Advanced Visualization
+### Phase 3: Advanced Visualization
 - **Priority:** Medium
 - **Features:**
+  - Video thumbnail generation
+  - Real-time execution streaming
   - Trajectory overlay (MuJoCo Marker API)
-  - Step-by-step replay with timeline
-  - Synchronized video playback
-  - Downloadable videos
+  - Multi-step task sequences
+  - Attention heatmap visualization
 
-### Infrastructure Improvements
+### Phase 4: Infrastructure
 - **Priority:** Medium
 - **Features:**
   - Ray Serve for environment workers
-  - vLLM for VLA serving (auto-batching)
-  - Redis caching
-  - Monitoring (Prometheus + Grafana)
+  - vLLM/TGI for VLA serving
+  - Redis caching for leaderboard
+  - Prometheus + Grafana monitoring
 
-### Community Features
+### Phase 5: Community
 - **Priority:** Low
 - **Features:**
   - User authentication
   - Model upload interface
+  - Public battle links
+  - Comments and discussions
   - Custom robot/scene upload
   - Public API
-  - Comments and discussions
 
 ---
 
@@ -124,11 +91,12 @@ These features are planned for post-MVP releases:
 
 ## 🔗 Related Documents
 
-- **[../ROADMAP.md](../ROADMAP.md)** - Development timeline and progress
+- **[../ROADMAP.md](../ROADMAP.md)** - Week-by-week development timeline
 - **[../00_PROJECT.md](../00_PROJECT.md)** - Project overview and architecture
-- **[../ARCHITECTURE/](../ARCHITECTURE/)** - Architecture Decision Records
+- **[../ARCHITECTURE/](../ARCHITECTURE/)** - Architecture Decision Records (ADR-001, ADR-002)
 
 ---
 
 **Last Updated:** 2025-01-04
 **Current Focus:** MVP Development (Week 2-7)
+**Current Week:** Week 2 - Backend Foundation

@@ -124,25 +124,25 @@ services:
           memory: ${WORKER_MEMORY_LIMIT:-1g}
           cpus: ${WORKER_CPU_LIMIT:-1.0}
 
-  # MinIO (S3-compatible object storage for videos) - dev and production
-  minio:
+  # MongoDB (Document database for episode execution data) - dev and production
+  mongodb:
     profiles: ["dev", "prod"]
-    image: minio/minio:latest
-    container_name: vlaarena-minio
+    image: mongo:7-jammy
+    container_name: vlaarena-mongodb
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
-    command: server /data --console-address ":9001"
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-admin}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE:-vlaarena}
     ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Console
+      - "27017:27017"
     volumes:
-      - minio_data:/data
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 10s
     restart: unless-stopped
     networks:
@@ -150,8 +150,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${MINIO_MEMORY_LIMIT:-2g}
-          cpus: ${MINIO_CPU_LIMIT:-1.0}
+          memory: ${MONGODB_MEMORY_LIMIT:-2g}
+          cpus: ${MONGODB_CPU_LIMIT:-1.0}
 
   # Frontend - production only
   frontend:
@@ -192,5 +192,7 @@ networks:
 volumes:
   postgres_data:
     name: vlaarena_postgres_data
-  minio_data:
-    name: vlaarena_minio_data
+  mongodb_data:
+    name: vlaarena_mongodb_data
+  mongodb_config:
+    name: vlaarena_mongodb_config
