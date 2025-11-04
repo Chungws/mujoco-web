@@ -1,0 +1,26 @@
+[project]
+name = "vlaarena"
+version = "0.1.0"
+description = "AI Language Model Battle Arena - Workspace Root"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.2",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.2",
+    "isort>=5.13.2",
+]
+
+[tool.uv.workspace]
+members = ["backend", "worker", "shared"]
+
+[tool.uv.sources]
+vlaarena-shared = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = []
