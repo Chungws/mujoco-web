@@ -1,0 +1,196 @@
+# Production Docker Compose
+#
+# IMPORTANT: Copy .env.prod.example to .env.prod and configure before running
+#
+# Start all services:
+#   docker compose --env-file .env.prod up -d
+#
+# View logs:
+#   docker compose logs -f [service_name]
+#
+# Stop all services:
+#   docker compose down
+#
+# Stop and remove volumes (WARNING: deletes all data):
+#   docker compose down -v
+#
+# Rebuild services:
+#   docker compose build
+#   docker compose --env-file .env.prod up -d
+
+services:
+  # Database (used in both dev and prod)
+  postgres:
+    profiles: ["dev", "prod"]
+    image: postgres:16-alpine
+    container_name: vlaarena-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres} # Dev: postgres, Prod: set in .env
+      POSTGRES_DB: ${POSTGRES_DB:-vlaarena}
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - vlaarena
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "2.0"
+
+  # Backend API (production only)
+  backend:
+    profiles: ["prod"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: vlaarena-backend
+    environment:
+      - POSTGRES_URI=${POSTGRES_URI:?POSTGRES_URI is required}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - MODELS_CONFIG_PATH=${MODELS_CONFIG_PATH:-/app/config/models.yaml}
+      - LLM_CONNECT_TIMEOUT=${LLM_CONNECT_TIMEOUT:-5}
+      - LLM_READ_TIMEOUT=${LLM_READ_TIMEOUT:-90}
+      - LLM_WRITE_TIMEOUT=${LLM_WRITE_TIMEOUT:-5}
+      - LLM_POOL_TIMEOUT=${LLM_POOL_TIMEOUT:-5}
+      - LLM_RETRY_ATTEMPTS=${LLM_RETRY_ATTEMPTS:-3}
+      - LLM_RETRY_BACKOFF_BASE=${LLM_RETRY_BACKOFF_BASE:-1.0}
+      - MAX_FOLLOW_UPS=${MAX_FOLLOW_UPS:-5}
+      - USE_MOCK_LLM=${USE_MOCK_LLM:-false}
+      - MIN_VOTES_FOR_LEADERBOARD=${MIN_VOTES_FOR_LEADERBOARD:-5}
+      - POSTGRES_POOL_SIZE=${POSTGRES_POOL_SIZE:-10}
+      - POSTGRES_MAX_OVERFLOW=${POSTGRES_MAX_OVERFLOW:-20}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - vlaarena
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-2g}
+          cpus: ${BACKEND_CPU_LIMIT:-2.0}
+
+  # Worker (ELO aggregation) - production only
+  worker:
+    profiles: ["prod"]
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: vlaarena-worker
+    environment:
+      - POSTGRES_URI=${POSTGRES_URI:?POSTGRES_URI is required}
+      - MODELS_CONFIG_PATH=${MODELS_CONFIG_PATH:-/app/config/models.yaml}
+      - WORKER_INTERVAL_MINUTES=${WORKER_INTERVAL_MINUTES:-60}
+      - WORKER_TIMEZONE=${WORKER_TIMEZONE:-UTC}
+      - INITIAL_ELO=${INITIAL_ELO:-1500}
+      - K_FACTOR=${K_FACTOR:-32}
+      - MIN_VOTES_FOR_LEADERBOARD=${MIN_VOTES_FOR_LEADERBOARD:-5}
+      - WORKER_POOL_SIZE=${WORKER_POOL_SIZE:-2}
+      - WORKER_MAX_OVERFLOW=${WORKER_MAX_OVERFLOW:-3}
+      - WORKER_POOL_TIMEOUT=${WORKER_POOL_TIMEOUT:-10}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - vlaarena
+    deploy:
+      resources:
+        limits:
+          memory: ${WORKER_MEMORY_LIMIT:-1g}
+          cpus: ${WORKER_CPU_LIMIT:-1.0}
+
+  # MinIO (S3-compatible object storage for videos) - dev and production
+  minio:
+    profiles: ["dev", "prod"]
+    image: minio/minio:latest
+    container_name: vlaarena-minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - vlaarena
+    deploy:
+      resources:
+        limits:
+          memory: ${MINIO_MEMORY_LIMIT:-2g}
+          cpus: ${MINIO_CPU_LIMIT:-1.0}
+
+  # Frontend - production only
+  frontend:
+    profiles: ["prod"]
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+    container_name: vlaarena-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - vlaarena
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-1g}
+          cpus: ${FRONTEND_CPU_LIMIT:-1.0}
+
+networks:
+  vlaarena:
+    name: vlaarena_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: vlaarena_postgres_data
+  minio_data:
+    name: vlaarena_minio_data

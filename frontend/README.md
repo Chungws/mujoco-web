@@ -1,57 +1,193 @@
-# MuJoCo Web VLA Integration
+# llmbattler-frontend
 
-A Next.js-based web application for running MuJoCo physics simulations with Vision-Language-Action (VLA) model support, directly in the browser.
+Next.js 15 frontend for LLM Battle Arena with App Router, React Server Components, and shadcn/ui.
+
+## Quick Start
+
+### Prerequisites
+- Node.js 20+
+- npm
+
+### Development Setup
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server with Turbopack
+npm run dev
+```
+
+**Visit:** http://localhost:3000
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure:
+
+```bash
+cp .env.example .env.local
+```
+
+Key settings:
+- `NEXT_PUBLIC_API_URL`: Backend API URL (default: http://localhost:8000)
+
+### Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+## Project Structure
+
+```
+frontend/
+├── app/                      # Next.js App Router (no src/)
+│   ├── layout.tsx            # Root layout with ThemeProvider
+│   ├── page.tsx              # Home page
+│   ├── globals.css           # Global styles with CSS variables
+│   ├── battle/               # Battle mode
+│   │   └── page.tsx
+│   └── leaderboard/          # Leaderboard
+│       └── page.tsx
+├── components/               # React components
+│   └── ui/                   # shadcn/ui components
+├── hooks/                    # Custom React hooks
+├── lib/                      # Utilities
+│   └── utils.ts              # cn() helper
+├── services/                 # API clients
+├── public/                   # Static assets
+├── package.json
+├── components.json           # shadcn/ui config
+├── tsconfig.json
+├── tailwind.config.ts
+├── next.config.ts
+├── eslint.config.mjs
+├── Dockerfile
+└── README.md
+```
+
+## Tech Stack
+
+- **Next.js 15** - React framework with App Router + Turbopack
+- **React 19** - UI library
+- **TypeScript 5** - Type safety
+- **Tailwind CSS v4** - Utility-first CSS with CSS variables
+- **shadcn/ui** - Re-usable components (Radix UI + Tailwind)
+- **next-themes** - Dark mode support
+- **lucide-react** - Icon library
+- **ESLint** - Code linting (flat config)
 
 ## Features
 
-- **Browser-Based Physics**: MuJoCo 3.3.7 running via WebAssembly
-- **VLA Model Support**: Vision-Language-Action models for robot control
-- **Real-time Rendering**: Three.js-powered 3D visualization
-- **No Server Required**: All computation runs client-side
+### Design System
+- shadcn/ui components (New York style)
+- CSS variables for theming
+- Dark mode with next-themes
+- Responsive design
+- Accessible components (Radix UI)
 
-## Built With
+### Pages
 
-This project is based on [**muwanx**](https://github.com/ttktjmt/muwanx) by Tatsuki Tsujimoto, a browser-based MuJoCo playground powered by mujoco_wasm and ONNX Runtime.
+**Home (`/`)**
+- Landing page with navigation
+- Links to Battle and Leaderboard
+- Responsive layout
 
-**Key Technologies:**
-- [Next.js](https://nextjs.org) - React framework
-- [MuJoCo WASM](https://github.com/google-deepmind/mujoco) - Physics simulation
-- [Three.js](https://threejs.org) - 3D rendering
-- [Transformers.js](https://huggingface.co/docs/transformers.js) - VLA model inference
+**Battle Mode (`/battle`)**
+- Placeholder for battle UI
+- TODO: Full implementation
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**Leaderboard (`/leaderboard`)**
+- Placeholder for leaderboard UI
+- TODO: Full implementation
 
-## Getting Started
+## shadcn/ui
 
-First, run the development server:
+Add components using the CLI:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add textarea
+# etc.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Configuration:** `components.json`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## TODO
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Battle UI (Phase 1.4)
+- [ ] Add shadcn/ui components (Button, Card, Textarea, ScrollArea)
+- [ ] Prompt input field
+- [ ] Side-by-side response display
+- [ ] Conversation history
+- [ ] Follow-up messages support (max 6 total)
+- [ ] Message counter
+- [ ] Voting buttons (Left/Right/Tie/Both Bad)
+- [ ] Model reveal after voting
+- [ ] Loading states (Spinner, Skeleton)
+- [ ] Error handling (Alert component)
 
-## Learn More
+### Leaderboard UI (Phase 2.4)
+- [ ] Add shadcn/ui Table component
+- [ ] Ranking table (Rank, Model, ELO, CI, Votes, Org, License)
+- [ ] Search/filter with Input component
+- [ ] Sortable columns
+- [ ] Metadata display (Badge, Card)
+- [ ] Loading states
+- [ ] Error handling
 
-To learn more about Next.js, take a look at the following resources:
+### API Integration
+- [ ] Create API clients (`services/`)
+  - [ ] Battle API (create, followup, vote)
+  - [ ] Leaderboard API (get rankings)
+  - [ ] Models API (list models)
+- [ ] Add custom hooks (`hooks/`)
+  - [ ] `useBattle()` - Battle state management
+  - [ ] `useLeaderboard()` - Leaderboard data fetching
+  - [ ] `useModels()` - Available models list
+- [ ] Error handling and loading states
+- [ ] TypeScript types for API responses
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### UI Components
+- [ ] Battle components
+  - [ ] BattleCard
+  - [ ] ResponseDisplay
+  - [ ] VoteButtons
+  - [ ] MessageCounter
+- [ ] Leaderboard components
+  - [ ] LeaderboardTable
+  - [ ] ModelRow
+  - [ ] RankBadge
+- [ ] Shared components (from shadcn/ui)
+  - [ ] Button
+  - [ ] Card
+  - [ ] Input
+  - [ ] Textarea
+  - [ ] Table
+  - [ ] Badge
+  - [ ] Spinner
+  - [ ] Alert
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Testing & Polish
+- [ ] Playwright MCP verification
+- [ ] Responsive design testing
+- [ ] Dark mode testing
+- [ ] Accessibility testing
+- [ ] Error boundaries
 
-## Deploy on Vercel
+## Related Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [WORKSPACE/CONVENTIONS/frontend/](../WORKSPACE/CONVENTIONS/frontend/) - Frontend conventions
+- [WORKSPACE/FEATURES/001_BATTLE_MVP.md](../WORKSPACE/FEATURES/001_BATTLE_MVP.md) - Battle mode spec
+- [WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md](../WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md) - Leaderboard spec
+- [shadcn/ui Documentation](https://ui.shadcn.com) - Component library
