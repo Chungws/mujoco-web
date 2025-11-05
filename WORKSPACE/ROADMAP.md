@@ -130,24 +130,24 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [x] MongoDB Episode document schema (actions, states, metrics) with Beanie ODM
   - [x] API schemas (requests/responses) - Session, Turn, Episode, Vote, Leaderboard with TDD (23 tests)
 
-- [ ] **Repository Layer**
-  - [ ] SessionRepository (PostgreSQL CRUD)
-  - [ ] BattleRepository (PostgreSQL CRUD)
+- [x] **Repository Layer**
+  - [x] SessionRepository (PostgreSQL CRUD) - Already implemented
+  - [x] BattleRepository (PostgreSQL CRUD) - Already implemented
   - [ ] TurnRepository (PostgreSQL CRUD)
   - [ ] VoteRepository (PostgreSQL CRUD)
   - [ ] EpisodeRepository (MongoDB CRUD - Motor async)
   - [ ] ModelStatsByRobotRepository (PostgreSQL CRUD)
   - [ ] ModelStatsTotalRepository (PostgreSQL CRUD)
-  - [ ] Base repository pattern
+  - [x] Base repository pattern - Already implemented
 
 - [ ] **Core APIs**
-  - [ ] POST /api/battles/init (create session+battle, assign models)
+  - [x] POST /api/sessions/init (create session+battle, assign models) - TDD with 15 tests
   - [ ] GET /api/battles/{battle_id} (get battle details with turns)
   - [ ] POST /api/battles/{battle_id}/turns (create new turn with episodes)
   - [ ] POST /api/votes (submit vote for turn)
   - [ ] GET /api/models (list available models)
   - [ ] GET /api/leaderboard (robot-specific and global rankings)
-  - [ ] Health check endpoint
+  - [x] Health check endpoint - Already implemented
 
 #### Acceptance Criteria
 - ✅ PostgreSQL + MongoDB running in Docker
@@ -155,8 +155,8 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ MongoDB connection works (Beanie ODM with Motor async)
 - ✅ All SQLModel models match ADR-002 specification
 - ✅ MongoDB Episode document model with State and Metrics
-- ✅ All tests passing (13/13 in shared package)
-- [ ] Battle can be created via API (session + battle + empty turns list)
+- ✅ All tests passing (13/13 in shared package, 15/15 in backend)
+- ✅ Session can be created via API (POST /api/sessions/init with robot_id and scene_id)
 - [ ] API docs at /docs functional
 - [ ] Leaderboard API returns robot-specific and global ELO
 

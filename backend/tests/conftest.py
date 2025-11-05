@@ -21,11 +21,14 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
 from vlaarena_backend.main import app
-from vlaarena_backend.services.llm_client import (
-    MockLLMClient,
-    reset_llm_client,
-    set_llm_client,
-)
+
+
+# Temporary: Comment out LLM client imports (not needed for VLA Arena MVP)
+# from vlaarena_backend.services.llm_client import (
+#     MockLLMClient,
+#     reset_llm_client,
+#     set_llm_client,
+# )
 
 
 # Test database URL - SQLite in-memory for isolated, fast tests
@@ -74,17 +77,18 @@ async def db():
         await conn.run_sync(SQLModel.metadata.drop_all)
 
 
-@pytest.fixture(autouse=True)
-def use_mock_llm():
-    """
-    Automatically use mock LLM for all tests
-
-    This fixture runs for every test and ensures that tests
-    don't make real API calls to external LLM providers.
-    """
-    set_llm_client(MockLLMClient())
-    yield
-    reset_llm_client()  # Clean up after test
+# Temporary: Comment out use_mock_llm fixture (not needed for VLA Arena MVP)
+# @pytest.fixture(autouse=True)
+# def use_mock_llm():
+#     """
+#     Automatically use mock LLM for all tests
+#
+#     This fixture runs for every test and ensures that tests
+#     don't make real API calls to external LLM providers.
+#     """
+#     set_llm_client(MockLLMClient())
+#     yield
+#     reset_llm_client()  # Clean up after test
 
 
 @pytest_asyncio.fixture(scope="function")

@@ -7,12 +7,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from vlaarena_backend.api import battles, leaderboard, models, sessions
-from vlaarena_backend.services.llm_client import (
-    MockLLMClient,
-    OpenAILLMClient,
-    set_llm_client,
-)
+# Temporary: Comment out battles, leaderboard, and models while implementing VLA Arena MVP
+# from vlaarena_backend.api import battles, leaderboard, models, sessions
+from vlaarena_backend.api import sessions
+
+# Temporary: Comment out LLM client (not needed for VLA Arena MVP session init)
+# from vlaarena_backend.services.llm_client import (
+#     MockLLMClient,
+#     OpenAILLMClient,
+#     set_llm_client,
+# )
 from vlaarena_shared.config import settings
 from vlaarena_shared.logging_config import setup_logging
 
@@ -26,13 +30,14 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     logger.info("Starting vlaarena-backend...")
 
-    # Initialize LLM client based on configuration
-    if settings.use_mock_llm:
-        logger.info("🎭 Using Mock LLM client (development/testing mode)")
-        set_llm_client(MockLLMClient())
-    else:
-        logger.info("🚀 Using OpenAI-compatible LLM client (production mode)")
-        set_llm_client(OpenAILLMClient())
+    # Temporary: Comment out LLM client initialization (VLA Arena doesn't need LLM for session init)
+    # # Initialize LLM client based on configuration
+    # if settings.use_mock_llm:
+    #     logger.info("🎭 Using Mock LLM client (development/testing mode)")
+    #     set_llm_client(MockLLMClient())
+    # else:
+    #     logger.info("🚀 Using OpenAI-compatible LLM client (production mode)")
+    #     set_llm_client(OpenAILLMClient())
 
     # TODO: Initialize database connections
     # - MongoDB (Motor)
@@ -75,7 +80,8 @@ async def health_check():
 
 
 # Include API routers
-app.include_router(models.router, prefix="/api", tags=["models"])
 app.include_router(sessions.router, prefix="/api", tags=["sessions"])
-app.include_router(battles.router, prefix="/api", tags=["battles"])
-app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
+# Temporary: Comment out while implementing VLA Arena MVP
+# app.include_router(models.router, prefix="/api", tags=["models"])
+# app.include_router(battles.router, prefix="/api", tags=["battles"])
+# app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
