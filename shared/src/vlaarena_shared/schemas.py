@@ -55,22 +55,12 @@ class EpisodeState(BaseModel):
     time: float
 
 
-class EpisodeMetrics(BaseModel):
-    """Episode execution metrics"""
-
-    success: bool
-    total_steps: int
-    max_steps: int
-    final_distance_to_goal: float
-
-
 class EpisodeResponse(BaseModel):
     """Response schema for GET /api/episodes/{episode_id}"""
 
     episode_id: str
     actions: list[list[float]]  # Variable length, up to 50
     states: list[EpisodeState]  # Variable length, up to 50
-    metrics: EpisodeMetrics
 
 
 # ==================== Vote Schemas ====================

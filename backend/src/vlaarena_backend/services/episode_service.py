@@ -45,8 +45,7 @@ class EpisodeService:
 
         Note:
             Converts MongoDB Episode document to Pydantic schema
-            with only the fields needed for frontend replay.
-            Handles Optional fields (e.g., final_distance_to_goal) gracefully.
+            with only the fields needed for frontend replay (actions and states).
         """
         episode = await self.get_episode(episode_id)
         if not episode:
@@ -66,10 +65,4 @@ class EpisodeService:
             episode_id=episode.episode_id,
             actions=episode.actions,
             states=episode_states,
-            metrics={
-                "success": episode.metrics.success,
-                "total_steps": episode.metrics.total_steps,
-                "max_steps": episode.metrics.max_steps,
-                "final_distance_to_goal": episode.metrics.final_distance_to_goal or 0.0,
-            },
         )

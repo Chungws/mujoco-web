@@ -39,7 +39,6 @@ class TestMockVLAService:
         # Assert
         assert "actions" in episode_data
         assert "states" in episode_data
-        assert "metrics" in episode_data
         assert "duration_ms" in episode_data
 
     def test_generate_episode_actions_format(self):
@@ -104,35 +103,6 @@ class TestMockVLAService:
             assert isinstance(state["qpos"], list)
             assert isinstance(state["qvel"], list)
             assert isinstance(state["time"], float)
-
-    def test_generate_episode_metrics_format(self):
-        """
-        Test that metrics have required fields
-
-        Arrange: Create service
-        Act: Generate episode
-        Assert: Metrics contain success, total_steps, max_steps
-        """
-        # Arrange
-        service = MockVLAService()
-
-        # Act
-        episode_data = service.generate_episode(
-            model_id="openvla-7b",
-            instruction="Pick up the red cube",
-            robot_id="widowx",
-            scene_id="table",
-        )
-
-        # Assert
-        metrics = episode_data["metrics"]
-        assert "success" in metrics
-        assert "total_steps" in metrics
-        assert "max_steps" in metrics
-        assert isinstance(metrics["success"], bool)
-        assert isinstance(metrics["total_steps"], int)
-        assert isinstance(metrics["max_steps"], int)
-        assert metrics["total_steps"] <= metrics["max_steps"]
 
     def test_generate_episode_variable_length(self):
         """
@@ -245,25 +215,3 @@ class TestMockVLAService:
 
         # Assert
         assert len(episode_data["states"]) == len(episode_data["actions"])
-
-    def test_generate_episode_metrics_total_steps_matches_actions(self):
-        """
-        Test that metrics.total_steps matches actual action count
-
-        Arrange: Create service
-        Act: Generate episode
-        Assert: metrics.total_steps == len(actions)
-        """
-        # Arrange
-        service = MockVLAService()
-
-        # Act
-        episode_data = service.generate_episode(
-            model_id="openvla-7b",
-            instruction="Pick up the red cube",
-            robot_id="widowx",
-            scene_id="table",
-        )
-
-        # Assert
-        assert episode_data["metrics"]["total_steps"] == len(episode_data["actions"])

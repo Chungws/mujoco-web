@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from vlaarena_shared.models import Battle, Session, Turn
-from vlaarena_shared.mongodb_models import Episode, Metrics, State
+from vlaarena_shared.mongodb_models import Episode, State
 from vlaarena_shared.schemas import TurnRequest, TurnResponse
 
 from .vla_service import MockVLAService
@@ -228,9 +228,6 @@ class TurnService:
         # Convert states to State objects
         states = [State(**state_dict) for state_dict in episode_data["states"]]
 
-        # Convert metrics to Metrics object
-        metrics = Metrics(**episode_data["metrics"])
-
         # Create Episode document
         episode = Episode(
             episode_id=episode_id,
@@ -244,16 +241,13 @@ class TurnService:
             model_id=model_id,
             actions=episode_data["actions"],
             states=states,
-            metrics=metrics,
             duration_ms=episode_data["duration_ms"],
         )
 
         # Save to MongoDB
         await episode.insert()
 
-        logger.info(
-            f"Episode saved: {episode_id}, {len(episode.actions)} steps, success={metrics.success}"
-        )
+        logger.info(f"Episode saved: {episode_id}, {len(episode.actions)} steps")
 
         return episode_id
 

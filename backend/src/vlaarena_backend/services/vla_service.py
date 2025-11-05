@@ -61,7 +61,6 @@ class MockVLAService:
             Dictionary containing:
             - actions: List of 8-dim action vectors
             - states: List of state dicts (qpos, qvel, time)
-            - metrics: Episode metrics dict
             - duration_ms: Execution duration in milliseconds
         """
         logger.info(
@@ -85,21 +84,14 @@ class MockVLAService:
         # Generate states
         states = self._generate_states(num_steps)
 
-        # Generate metrics
-        metrics = self._generate_metrics(num_steps)
-
         # Calculate duration (ensure at least 1ms)
         duration_ms = max(1, int((time.time() - start_time) * 1000))
 
-        logger.info(
-            f"Episode generated: {num_steps} steps, "
-            f"success={metrics['success']}, duration={duration_ms}ms"
-        )
+        logger.info(f"Episode generated: {num_steps} steps, duration={duration_ms}ms")
 
         return {
             "actions": actions,
             "states": states,
-            "metrics": metrics,
             "duration_ms": duration_ms,
         }
 
@@ -152,26 +144,3 @@ class MockVLAService:
             }
             states.append(state)
         return states
-
-    def _generate_metrics(self, num_steps: int) -> dict[str, Any]:
-        """
-        Generate mock episode metrics
-
-        Args:
-            num_steps: Actual number of steps executed
-
-        Returns:
-            Dictionary with episode metrics
-        """
-        # Mock success rate (70% success)
-        success = random.random() < 0.7
-
-        return {
-            "success": success,
-            "total_steps": num_steps,
-            "max_steps": self.MAX_STEPS,
-            "terminated_early": num_steps < self.MAX_STEPS,
-            "final_distance_to_goal": random.uniform(0.0, 0.1) if success else None,
-            "collision_count": random.randint(0, 2),
-            "gripper_opened_at_step": random.randint(10, num_steps - 5) if num_steps > 15 else None,
-        }

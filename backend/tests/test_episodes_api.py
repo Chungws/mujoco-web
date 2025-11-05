@@ -8,7 +8,7 @@ Episode API handles retrieving episode data from MongoDB for frontend replay.
 import pytest
 from fastapi.testclient import TestClient
 
-from vlaarena_shared.mongodb_models import Episode, Metrics, State
+from vlaarena_shared.mongodb_models import Episode, State
 
 
 class TestEpisodeAPI:
@@ -22,7 +22,7 @@ class TestEpisodeAPI:
         Scenario:
         1. Episode exists in MongoDB
         2. User requests episode by ID
-        3. Returns complete episode data with actions, states, metrics
+        3. Returns complete episode data with actions and states
 
         AAA Pattern:
         - Arrange: Create episode in MongoDB
@@ -48,13 +48,6 @@ class TestEpisodeAPI:
                     time=0.0,
                 )
             ],
-            metrics=Metrics(
-                success=True,
-                total_steps=1,
-                max_steps=50,
-                terminated_early=False,
-                final_distance_to_goal=0.05,
-            ),
             duration_ms=1000,
         )
         await episode.insert()
@@ -70,7 +63,6 @@ class TestEpisodeAPI:
         assert "episode_id" in result
         assert "actions" in result
         assert "states" in result
-        assert "metrics" in result
 
         # Check episode_id
         assert result["episode_id"] == "ep_test123"
@@ -86,13 +78,6 @@ class TestEpisodeAPI:
         assert state["qpos"] == [1.0, 2.0, 3.0]
         assert state["qvel"] == [0.1, 0.2, 0.3]
         assert state["time"] == 0.0
-
-        # Check metrics
-        metrics = result["metrics"]
-        assert metrics["success"] is True
-        assert metrics["total_steps"] == 1
-        assert metrics["max_steps"] == 50
-        assert metrics["final_distance_to_goal"] == 0.05
 
     @pytest.mark.asyncio
     async def test_get_episode_not_found(self, client: TestClient, mongodb):
@@ -156,11 +141,6 @@ class TestEpisodeAPI:
             model_id="openvla-7b",
             actions=actions,
             states=states,
-            metrics=Metrics(
-                success=True,
-                total_steps=10,
-                max_steps=50,
-            ),
             duration_ms=1000,
         )
         await episode.insert()
@@ -181,9 +161,6 @@ class TestEpisodeAPI:
         # Verify first and last states
         assert result["states"][0]["time"] == 0.0
         assert result["states"][9]["time"] == 0.9
-
-        # Verify metrics
-        assert result["metrics"]["total_steps"] == 10
 
     @pytest.mark.asyncio
     async def test_get_episode_max_steps(self, client: TestClient, mongodb):
@@ -224,12 +201,6 @@ class TestEpisodeAPI:
             model_id="octo-base",
             actions=actions,
             states=states,
-            metrics=Metrics(
-                success=False,
-                total_steps=50,
-                max_steps=50,
-                terminated_early=False,
-            ),
             duration_ms=5000,
         )
         await episode.insert()
@@ -244,8 +215,6 @@ class TestEpisodeAPI:
         # Check max steps
         assert len(result["actions"]) == 50
         assert len(result["states"]) == 50
-        assert result["metrics"]["total_steps"] == 50
-        assert result["metrics"]["max_steps"] == 50
 
     @pytest.mark.asyncio
     async def test_get_episode_early_termination(self, client: TestClient, mongodb):
@@ -260,7 +229,7 @@ class TestEpisodeAPI:
         AAA Pattern:
         - Arrange: Create episode with 15 steps (terminated early)
         - Act: GET /api/episodes/{episode_id}
-        - Assert: Verify 15 steps returned, metrics show early termination
+        - Assert: Verify 15 steps returned
         """
         # Arrange: Create episode with 15 steps (early termination)
         actual_steps = 15
@@ -286,13 +255,6 @@ class TestEpisodeAPI:
             model_id="openvla-7b",
             actions=actions,
             states=states,
-            metrics=Metrics(
-                success=True,
-                total_steps=15,
-                max_steps=50,
-                terminated_early=True,
-                final_distance_to_goal=0.01,
-            ),
             duration_ms=1500,
         )
         await episode.insert()
@@ -307,8 +269,3 @@ class TestEpisodeAPI:
         # Check actual steps (not max steps)
         assert len(result["actions"]) == 15
         assert len(result["states"]) == 15
-
-        # Check metrics for early termination
-        assert result["metrics"]["total_steps"] == 15
-        assert result["metrics"]["max_steps"] == 50
-        assert result["metrics"]["success"] is True

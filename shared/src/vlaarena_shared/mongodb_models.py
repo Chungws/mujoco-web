@@ -22,27 +22,11 @@ class State(BaseModel):
     time: float = Field(description="Simulation time in seconds")
 
 
-class Metrics(BaseModel):
-    """
-    Episode execution metrics
-
-    Summary statistics for episode performance evaluation
-    """
-
-    success: bool = Field(description="Task completion status")
-    total_steps: int = Field(description="Actual steps executed")
-    max_steps: int = Field(description="Configured maximum steps")
-    terminated_early: bool = Field(default=False)
-    final_distance_to_goal: float | None = Field(default=None)
-    collision_count: int = Field(default=0)
-    gripper_opened_at_step: int | None = Field(default=None)
-
-
 class Episode(Document):
     """
     VLA model execution episode stored in MongoDB
 
-    Contains actions, states, and metrics for browser-based replay.
+    Contains actions and states for browser-based replay.
     Size: ~13 KB max (50 steps), average ~8 KB
     """
 
@@ -64,9 +48,6 @@ class Episode(Document):
     # Execution data (variable length, up to EPISODE_MAX_STEPS)
     actions: list[list[float]] = Field(description="8-dim actions for each step")
     states: list[State] = Field(description="MuJoCo states (qpos, qvel, time) for replay")
-
-    # Metrics (small summary)
-    metrics: Metrics = Field(description="Episode performance metrics")
 
     # Metadata
     duration_ms: int = Field(description="Execution time in milliseconds")
