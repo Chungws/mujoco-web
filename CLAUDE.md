@@ -65,7 +65,7 @@ uv run pytest -s
 **Frontend:**
 ```bash
 npm run lint
-# If UI changed: Verify with Playwright MCP
+# If UI changed: Verify with Chrome DevTools MCP
 ```
 
 **All checks must pass before creating PR.**
@@ -87,7 +87,7 @@ Use these skills for specialized workflows:
 | `committing-changes` | Git commit format (`<type>: <subject>`, Co-authored-by) |
 | `creating-pull-requests` | GitHub PR creation (English, develop target, <300 lines) |
 | `fastapi-patterns` | Backend architecture (4-layer: models→schemas→service→router) |
-| `frontend-ui-testing` | Playwright MCP verification (MANDATORY for UI changes) |
+| `frontend-ui-testing` | Chrome DevTools MCP verification (MANDATORY for UI changes) |
 | `git-branching` | Git Flow branching (feature/*, develop, main) |
 | `managing-python-deps` | uv dependency management (NEVER use pip) |
 | `nextjs-rsc-patterns` | Next.js RSC patterns (page.tsx async, *-client.tsx) |
@@ -157,7 +157,7 @@ docker compose up -d
 **Backend:**
 ```bash
 # Install dependencies (from root)
-uv sync
+uv sync --all-extras
 
 # Run backend
 cd backend
@@ -331,7 +331,7 @@ mujoco-web/
 4. **NEVER edit `components/ui/`** directly (shadcn/ui components)
 5. **ALWAYS use `uv`** for Python deps (NOT pip)
 6. **ALWAYS run ruff** for linting (includes import sorting)
-7. **MANDATORY Playwright MCP** verification for UI changes
+7. **MANDATORY Chrome DevTools MCP** verification for UI changes
 8. **ALWAYS use --autogenerate** for Alembic migrations
 
 **When in doubt:** Check WORKSPACE docs or invoke relevant skill

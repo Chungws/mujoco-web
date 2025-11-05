@@ -179,7 +179,7 @@ npx shadcn@latest add textarea
   - [ ] Alert
 
 ### Testing & Polish
-- [ ] Playwright MCP verification
+- [ ] Chrome DevTools MCP verification
 - [ ] Responsive design testing
 - [ ] Dark mode testing
 - [ ] Accessibility testing
