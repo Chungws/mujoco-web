@@ -111,23 +111,23 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 **Goal:** Functional API with database and basic services
 
 #### Tasks
-- [ ] **Database Setup**
-  - [ ] PostgreSQL via Docker Compose
-  - [ ] MongoDB via Docker Compose (for episode data)
-  - [ ] Alembic migration setup
-  - [ ] Create initial migration (sessions, battles, turns, votes, model_stats_by_robot, model_stats_total, worker_status)
-  - [ ] MongoDB connection setup (Motor async driver)
-  - [ ] See [ADR-002](./ARCHITECTURE/ADR_002-Database_Schema.md) for complete schema
+- [x] **Database Setup**
+  - [x] PostgreSQL via Docker Compose
+  - [x] MongoDB via Docker Compose (for episode data)
+  - [x] Alembic migration setup
+  - [x] Create initial migration (sessions, battles, turns, votes, model_stats_by_robot, model_stats_total, worker_status)
+  - [x] MongoDB connection setup (Beanie ODM with Motor async driver)
+  - [x] See [ADR-002](./ARCHITECTURE/ADR_002-Database_Schema.md) for complete schema
 
-- [ ] **Shared Models & Schemas**
-  - [ ] Session model (session_id, robot_id, scene_id, user_id, timestamps)
-  - [ ] Battle model (battle_id, session_id, model_a_id, model_b_id, seq)
-  - [ ] Turn model (turn_id, battle_id, instruction, episode_a_id, episode_b_id, seq)
-  - [ ] Vote model (vote_id, turn_id, winner, robot_id, scene_id - denormalized)
-  - [ ] ModelStatsByRobot model (model_id, robot_id, elo_score, CI, counts)
-  - [ ] ModelStatsTotal model (model_id, global_elo_score, organization, license)
-  - [ ] WorkerStatus model (status tracking)
-  - [ ] MongoDB Episode document schema (actions, states, metrics)
+- [x] **Shared Models & Schemas**
+  - [x] Session model (session_id, robot_id, scene_id, user_id, timestamps)
+  - [x] Battle model (battle_id, session_id, left_model_id, right_model_id, seq)
+  - [x] Turn model (turn_id, battle_id, instruction, seq)
+  - [x] Vote model (vote_id, battle_id, robot_id, scene_id - denormalized)
+  - [x] ModelStatsByRobot model (model_id, robot_id, elo_score, CI, counts)
+  - [x] ModelStatsTotal model (model_id, global_elo_score, organization, license)
+  - [x] WorkerStatus model (status tracking)
+  - [x] MongoDB Episode document schema (actions, states, metrics) with Beanie ODM
   - [ ] API schemas (requests/responses)
 
 - [ ] **Repository Layer**
@@ -152,10 +152,13 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 #### Acceptance Criteria
 - ✅ PostgreSQL + MongoDB running in Docker
 - ✅ Migrations work (uv run alembic upgrade head)
-- ✅ MongoDB connection works (Motor async queries)
-- ✅ Battle can be created via API (session + battle + empty turns list)
-- ✅ API docs at /docs functional
-- ✅ Leaderboard API returns robot-specific and global ELO
+- ✅ MongoDB connection works (Beanie ODM with Motor async)
+- ✅ All SQLModel models match ADR-002 specification
+- ✅ MongoDB Episode document model with State and Metrics
+- ✅ All tests passing (13/13 in shared package)
+- [ ] Battle can be created via API (session + battle + empty turns list)
+- [ ] API docs at /docs functional
+- [ ] Leaderboard API returns robot-specific and global ELO
 
 ---
 
@@ -327,15 +330,24 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 
 ## 🎯 Current Status
 
-**Week:** 2 (Backend Foundation)
+**Week:** 2-3 (Backend Foundation)
 **Active Tasks:**
-- Setting up database migrations
-- Implementing Session API
-- Configuring Docker Compose
+- Implementing Core APIs (Session, Battle, Turn, Vote endpoints)
+- Setting up Repository layer
+- Implementing API schemas
+
+**Completed:**
+- ✅ PostgreSQL + MongoDB Docker setup
+- ✅ Database schema migration (b3a87a3d54ec)
+- ✅ All SQLModel models (Session, Battle, Turn, Vote, ModelStats)
+- ✅ MongoDB Episode model with Beanie ODM
+- ✅ MongoDB connection with indexes
+- ✅ 13 passing tests for MongoDB
 
 **Next Up:**
-- Episode API scaffolding
-- MuJoCo environment setup
+- Repository layer implementation
+- Core API endpoints (POST /api/sessions/init, etc.)
+- VLA execution service (mock)
 
 ---
 
@@ -344,12 +356,18 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Milestone | Status | Progress | Target Date |
 |-----------|--------|----------|-------------|
 | Phase 0: Setup | ✅ Complete | 100% | 2025-01-04 |
-| Backend Foundation | 🔄 In Progress | 20% | Week 3 end |
+| Backend Foundation | 🔄 In Progress | 50% | Week 3 end |
 | VLA & MuJoCo | ⏸️ Not Started | 0% | Week 5 end |
 | Frontend & Worker | ⏸️ Not Started | 0% | Week 6 end |
 | Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 15% complete
+**Overall MVP Progress:** 30% complete
+
+**Progress Details:**
+- Database setup: 100% (PostgreSQL + MongoDB)
+- Models & Schemas: 90% (API schemas pending)
+- Repository layer: 0%
+- Core APIs: 0%
 
 ---
 
@@ -469,10 +487,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-01-04 | Updated for MongoDB + state-based replay (ADR-002) | Claude |
 | 2025-01-04 | Added robot-specific ELO, multi-turn battles | Claude |
 | 2025-01-04 | Variable episode length support | Claude |
+| 2025-11-05 | Database foundation complete (Steps 1-3) | Claude |
 
 ---
 
-**Last Updated:** 2025-01-04
-**Status:** MVP Week 2 - Backend Foundation
-**Next Milestone:** Database migrations (PostgreSQL + MongoDB) + Battle API
+**Last Updated:** 2025-11-05
+**Status:** MVP Week 2-3 - Backend Foundation (50% complete)
+**Next Milestone:** Core APIs (Session, Battle, Turn endpoints)
 **Target MVP Completion:** Week 7

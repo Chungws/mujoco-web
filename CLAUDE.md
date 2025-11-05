@@ -1,344 +1,353 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this repository.
+**AI Assistant guidance for the mujoco-web repository**
+
+---
 
 ## 📖 Project Overview
 
-**mujoco-web** - VLA Model Testing & Evaluation Platform
+**VLA Arena** - Vision-Language-Action Model Comparison Platform
 
-A web-based platform for testing and evaluating Vision-Language-Action (VLA) models in simulated environments using MuJoCo physics simulator.
+A web-based arena for blind A/B testing of VLA models in MuJoCo-simulated robot manipulation tasks. Users provide natural language instructions, watch two anonymized models execute side-by-side, vote on performance, and contribute to an ELO-based leaderboard.
 
-**Key Features:**
-- Phase 1: VLA policy visualization in MuJoCo simulator
-- Phase 2: Blind A/B testing and ELO-based leaderboard for VLA models
+**Tech Stack:**
+- **Frontend:** Next.js 15 (App Router), Three.js, MuJoCo WASM, shadcn/ui
+- **Backend:** FastAPI, SQLModel, PostgreSQL, MongoDB
+- **Worker:** Python, APScheduler (ELO aggregation)
+- **Tooling:** uv (Python), npm (Frontend), Docker Compose
+
+**Reference Project:** `../lmarena-clone` (architecture patterns)
 
 ---
 
 ## 🔴 CRITICAL RULES
 
 ### 1. Branch Safety
-**BEFORE doing ANY work, ALWAYS check current branch:**
+
+**ALWAYS check current branch before ANY work:**
 ```bash
 git branch --show-current
 ```
 
-**Rules:**
-- ❌ NEVER work on `main` branch directly (once feature branches are set up)
-- ✅ ALWAYS switch to feature branch FIRST
-- ✅ Create feature branch: `git checkout -b feature/your-feature-name`
+- ✅ Work on `feature/*` branches for new features
+- ✅ Target `develop` branch for PRs
+- ❌ NEVER work directly on `main` or `develop`
 
-**Current Status:**
-- Phase 0-1: May work on `main` branch (early development)
-- Phase 2+: Switch to feature branch workflow
+**See:** `git-branching` skill for complete branching strategy
 
-### 2. Project Policies ⚠️
+---
 
-| Policy | This Project | Reference |
-|--------|--------------|-----------|
-| Foreign Keys | ❌ **NOT used** (Phase 2) | [lmarena-clone ADR-001](../lmarena-clone/WORKSPACE/ARCHITECTURE/ADR_001-No_Foreign_Keys.md) |
-| Main Branch | ✅ `main` | Standard Git Flow |
-| PR Language | ✅ **English** | - |
-| Git Host | ✅ **GitHub** | - |
-| Package Manager (Frontend) | ✅ **npm** | - |
-| Package Manager (Backend) | ✅ **uv** (Phase 2) | - |
+### 2. Core Policies
 
-**🚨 ALWAYS check WORKSPACE/00_PROJECT.md for complete policies**
+| Policy | Value | Skill Reference |
+|--------|-------|-----------------|
+| **Main Branch** | `develop` | `git-branching` |
+| **PR Target** | `develop` | `creating-pull-requests` |
+| **PR Language** | English | `creating-pull-requests` |
+| **PR Size** | < 300 lines | `creating-pull-requests` |
+| **Foreign Keys** | ❌ NOT used | `sqlmodel-no-foreign-keys` |
+| **Python Deps** | `uv` (NOT pip) | `managing-python-deps` |
+| **Linting** | `ruff` (NOT isort) | Root `pyproject.toml` |
+
+**Complete policies:** `WORKSPACE/00_PROJECT.md`
+
+---
 
 ### 3. Pre-Commit Checklist
 
-**Phase 1 (Frontend Only):**
+**Backend:**
 ```bash
-cd frontend
-npm run lint    # ESLint check
-npm run build   # Verify build works
-# UI changes: Test manually in browser
+uvx ruff check        # Linting (includes import sorting)
+uvx ruff format --check
+uv run pytest -s
 ```
 
-**Phase 2 (Backend + Frontend):**
+**Frontend:**
 ```bash
-# Frontend
-cd frontend
 npm run lint
-
-# Backend
-cd backend
-uvx ruff check
-uvx ruff format --check
-uv run pytest -s
-
-# Worker
-cd worker
-uvx ruff check
-uvx ruff format --check
-uv run pytest -s
+# If UI changed: Verify with Chrome DevTools MCP
 ```
 
 **All checks must pass before creating PR.**
 
+**See:** `reviewing-code` skill for complete checklist
+
 ---
 
-## 📚 Documentation
+## 🎯 Skills & Slash Commands
 
-**⭐ All detailed rules and conventions are in WORKSPACE:**
+### Available Skills
 
-| Category | Location | Description |
-|----------|----------|-------------|
-| **Project Info** | [WORKSPACE/00_PROJECT.md](./WORKSPACE/00_PROJECT.md) | Project overview, policies, Quick Start |
-| **Roadmap** | [WORKSPACE/ROADMAP.md](./WORKSPACE/ROADMAP.md) | Development roadmap and milestones |
-| **Features** | [WORKSPACE/FEATURES/](./WORKSPACE/FEATURES/) | Feature specifications and phase tracking |
-| **Reference** | [../lmarena-clone](../lmarena-clone) | Reference project for Phase 2 architecture |
+Use these skills for specialized workflows:
+
+| Skill | Purpose |
+|-------|---------|
+| `alembic-migrations` | Database migration management (ALWAYS use --autogenerate) |
+| `backend-tdd-workflow` | TDD workflow (Red-Green-Refactor, pytest, AAA pattern) |
+| `committing-changes` | Git commit format (`<type>: <subject>`, Co-authored-by) |
+| `creating-pull-requests` | GitHub PR creation (English, develop target, <300 lines) |
+| `fastapi-patterns` | Backend architecture (4-layer: models→schemas→service→router) |
+| `frontend-ui-testing` | Chrome DevTools MCP verification (MANDATORY for UI changes) |
+| `git-branching` | Git Flow branching (feature/*, develop, main) |
+| `managing-python-deps` | uv dependency management (NEVER use pip) |
+| `nextjs-rsc-patterns` | Next.js RSC patterns (page.tsx async, *-client.tsx) |
+| `reviewing-code` | Self code review checklist (before MR) |
+| `sqlmodel-no-foreign-keys` | Database modeling with NO FKs (ADR-001) |
+| `using-shadcn-components` | shadcn/ui components (NEVER edit components/ui/) |
+
+**Invoke skills:** Use the Skill tool with skill name (e.g., `Skill(command="fastapi-patterns")`)
+
+---
+
+### Available Slash Commands
+
+Workflow automation commands:
+
+| Command | Purpose |
+|---------|---------|
+| `/start-phase` | Start new development phase (create branch, read conventions) |
+| `/verify-phase` | Run all quality checks (lint, format, tests) |
+| `/review-phase` | Self code review + update docs before MR |
+| `/end-phase` | Complete phase and prepare for next |
+| `/create-pr` | Create GitHub PR with English format |
+| `/clarify` | Clarify requirements and design architecture |
+| `/new-feature` | Create new feature spec in WORKSPACE/FEATURES/ |
+| `/sync-docs` | Check WORKSPACE docs sync with code |
+| `/check-outdated` | Check if WORKSPACE docs are outdated |
+| `/help-kr` | Korean help guide for all commands |
+
+**Invoke commands:** Use the SlashCommand tool (e.g., `SlashCommand(command="/start-phase")`)
+
+---
+
+## 📚 Documentation Structure
+
+**All detailed documentation lives in WORKSPACE:**
+
+```
+WORKSPACE/
+├── 00_PROJECT.md              # Project overview, policies, Quick Start
+├── ROADMAP.md                 # Development roadmap and milestones
+├── FEATURES/
+│   ├── 001_MVP.md             # VLA Arena MVP specification (current)
+│   └── README.md              # Feature tracking guide
+└── ARCHITECTURE/
+    ├── ADR_001-No_Foreign_Keys.md
+    └── ADR_002-Database_Schema_Design.md
+
+.claude/
+├── skills/                     # Specialized workflows (13 skills)
+└── commands/                   # Slash commands (10 commands)
+```
+
+**Always check WORKSPACE first for project-specific rules.**
 
 ---
 
 ## 🚀 Quick Start
 
-### Phase 1 Setup (Current)
+### Development Setup
 
+**Infrastructure:**
 ```bash
-# Install frontend dependencies
+# Start PostgreSQL + MongoDB
+docker compose up -d
+```
+
+**Backend:**
+```bash
+# Install dependencies (from root)
+uv sync --all-extras
+
+# Run backend
+cd backend
+uv run uvicorn vlaarena_backend.main:app --reload --port 8000
+```
+
+**Frontend:**
+```bash
 cd frontend
 npm install
-
-# Start development server
-npm run dev
+npm run dev  # Port 3000
 ```
 
-**Endpoints:**
-- Frontend: http://localhost:3000
-- MuJoCo Viewer: Integrated in home page
-
-### Phase 2 Setup (Planned)
-
-Will include backend API, worker, and database similar to lmarena-clone:
-
+**Worker (optional):**
 ```bash
-# Install dependencies
-make setup
-
-# Start infrastructure (PostgreSQL)
-make dev-infra
-
-# Run services in separate terminals
-Terminal 1: make dev-backend   # Backend API (port 8000)
-Terminal 2: make dev-frontend  # Frontend (port 3000)
-Terminal 3: make dev-worker    # Worker (optional)
+cd worker
+uv run python -m vlaarena_worker.main
 ```
 
-🔗 **Full setup guide:** [WORKSPACE/00_PROJECT.md#quick-start](./WORKSPACE/00_PROJECT.md)
+**Complete setup:** `WORKSPACE/00_PROJECT.md#quick-start`
 
 ---
 
-## 🤖 Workflow Commands
+## 📊 Current Status
 
-### Phase 1 (Current)
+**Phase:** MVP Development - Week 2-3 (Backend Foundation)
 
-**Frontend Development:**
-```bash
-cd frontend
-npm run dev        # Start dev server (port 3000)
-npm run build      # Production build
-npm run lint       # Run ESLint
-```
+**Completed:**
+- ✅ Week 1: Project setup, ADR-001, ADR-002, Docker Compose
+- ✅ Step 1: PostgreSQL schema update (Session, Battle, Turn, Vote, ModelStats)
+- ✅ Step 2: MongoDB connection with Beanie ODM (Episode storage)
 
-### Phase 2 (Planned)
+**Current Work:**
+- 🔄 Step 3: Alembic migration (done)
+- 🔄 Step 4: API endpoints (session, battles, episodes, voting)
 
-**Makefile Commands:**
-```bash
-make help         # Show all available commands
-make setup        # Install dependencies
-make dev-infra    # Start PostgreSQL
-make dev-backend  # Start Backend API
-make dev-frontend # Start Frontend
-make dev-worker   # Run Worker
-make stop         # Stop Docker services
-make test         # Run all tests
-make lint         # Run all linters
-```
+**Next:**
+- ⏭️ Week 3-4: VLA execution service (MuJoCo + model inference)
+- ⏭️ Week 4-5: Frontend battle page + leaderboard
+- ⏭️ Week 5-6: Worker + ELO calculation
 
-**Common Workflow:**
-1. Check branch: `git branch --show-current`
-2. Create feature branch: `git checkout -b feature/your-feature-name`
-3. Start development server
-4. Develop and test locally
-5. Run pre-commit checks
-6. Commit and push
-7. Create GitHub Pull Request
+**Detailed roadmap:** `WORKSPACE/FEATURES/001_MVP.md`
 
 ---
 
-## 🏗️ Architecture Summary
+## 🏗️ Architecture Overview
 
-### Phase 1: VLA Visualization
+**High-Level Flow:**
 ```
-┌─────────────────┐
-│ Next.js Client  │ (MuJoCo Viewer, VLA Controls)
-└────────┬────────┘
-         │
-    ┌────▼─────────┐
-    │ MuJoCo WASM  │ (Physics Simulation)
-    └──────────────┘
-```
-
-**Tech Stack:**
-- Frontend: Next.js 15 with App Router
-- 3D Rendering: Three.js + MuJoCo WASM
-- ML Inference: ONNX Runtime Web (client-side)
-- Styling: Tailwind CSS
-
-### Phase 2: Model Comparison (Planned)
-```
-┌─────────────────┐
-│ Next.js Client  │ (Battle UI, Leaderboard, MuJoCo Viewer)
-└────────┬────────┘
-         │
-    ┌────▼─────────┐
-    │ FastAPI API  │ (Sessions, Battles, Voting)
-    └────┬─────────┘
-         │
-         ├──► VLA Model A
-         ├──► VLA Model B
-         └──► PostgreSQL
-                  │
-             ┌────▼────────┐
-             │   Worker    │ (ELO aggregation)
-             └─────────────┘
+User → Battle Page (Next.js)
+  ↓
+POST /api/sessions/init → Create session + assign models
+  ↓
+POST /api/battles/{id}/turns → Server-side VLA execution
+  ↓
+Episodes saved to MongoDB (actions, states, metrics)
+  ↓
+GET /api/episodes/{id} → Frontend loads states
+  ↓
+MuJoCo WASM renders side-by-side replay
+  ↓
+POST /api/votes → Submit vote + reveal models
+  ↓
+Worker (hourly) → Aggregate votes → Update ELO rankings
 ```
 
-**Tech Stack (Additional):**
-- Backend: FastAPI with SQLModel
-- Database: PostgreSQL with JSONB
-- Worker: Python with APScheduler
-- Package Manager: uv (Python workspace)
+**Key Design Decisions:**
+- **Server-side execution:** MuJoCo + VLA inference on backend (not browser)
+- **State-based replay:** Store qpos/qvel, not videos
+- **No Foreign Keys:** Application-level relationships (ADR-001)
+- **Robot-specific ELO:** Separate rankings per robot + global rankings
+
+**Architecture details:** `WORKSPACE/00_PROJECT.md` and `WORKSPACE/ARCHITECTURE/`
 
 ---
 
-## 📂 Key Directories
+## 📂 Project Structure
 
-### Phase 1 (Current)
 ```
-frontend/
-├── app/              # Next.js pages
-├── components/       # React components
-│   └── mujoco-viewer.tsx  # Main viewer
-├── lib/              # Utilities
-│   └── mujoco/       # MuJoCo integration
-└── public/
-    └── mujoco/       # Scene files
-
-mujoco_wasm/          # MuJoCo WebAssembly build
-└── dist/             # Compiled WASM files
-
-WORKSPACE/            # Documentation
-├── 00_PROJECT.md     # Project overview
-├── ROADMAP.md        # Development roadmap
-└── FEATURES/         # Feature specs
+mujoco-web/
+├── frontend/                  # Next.js 15 application
+│   ├── app/                   # App Router pages
+│   ├── components/            # React components
+│   └── lib/                   # Utilities, MuJoCo integration
+├── backend/                   # FastAPI application
+│   ├── src/vlaarena_backend/
+│   │   ├── api/               # Routers
+│   │   └── services/          # Business logic
+│   └── alembic/               # Database migrations
+├── worker/                    # Vote aggregation worker
+│   └── src/vlaarena_worker/
+│       └── aggregators/       # ELO calculation
+├── shared/                    # Shared Python code
+│   ├── src/vlaarena_shared/
+│   │   ├── models.py          # PostgreSQL models (SQLModel)
+│   │   ├── schemas.py         # Pydantic schemas
+│   │   ├── mongodb_models.py  # MongoDB models (Beanie)
+│   │   └── mongodb.py         # MongoDB connection
+│   └── tests/                 # Shared tests
+├── WORKSPACE/                 # Documentation
+├── .claude/                   # Skills & slash commands
+├── docker-compose.yml         # PostgreSQL + MongoDB
+└── pyproject.toml             # uv workspace config
 ```
-
-### Phase 2 (Planned)
-```
-backend/              # FastAPI application
-worker/               # Vote aggregation worker
-shared/               # Shared Python code
-docker-compose.yml    # Docker services
-```
-
----
-
-## 🎯 Development Phases
-
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Phase 0 | ✅ Done | Project setup and documentation |
-| Phase 1 | 🔄 Current | VLA visualization (MuJoCo + ONNX) |
-| Phase 2 | ⏸️ Planned | Model comparison and leaderboard |
-
-**Current Focus:** Phase 1 - VLA Visualization
-**See:** [WORKSPACE/ROADMAP.md](./WORKSPACE/ROADMAP.md)
 
 ---
 
 ## 🔑 Key Concepts
 
-### VLA (Vision-Language-Action) Models
-- Input: Visual observations + Natural language instructions
-- Output: Actions for robot control
-- Example: "Pick up the red cube" → Robot arm movements
+**VLA (Vision-Language-Action) Models:**
+- Input: Camera observations + natural language instruction
+- Output: 8-dim action vectors (position, rotation, gripper)
+- Examples: OpenVLA 7B, Octo-base
 
-### MuJoCo
-- Physics simulator for robotics
-- Runs in browser via WebAssembly
-- Real-time simulation and rendering
+**Episode:**
+- Single execution of one VLA model for one instruction
+- Stored in MongoDB: actions, states (qpos/qvel), metrics
+- Max 50 steps, ~13KB per episode
 
-### Phase 2: Battle System (Planned)
-- Blind A/B testing of VLA models
-- Users vote on better performance
-- ELO rankings like chess ratings
-- Based on lmarena-clone architecture
+**Battle:**
+- Two episodes (left vs right) for same instruction
+- Blind comparison (models hidden until vote)
+- User votes: left_better, right_better, tie, both_bad
 
----
-
-## 📝 Conventions
-
-### Frontend (Phase 1)
-- **Components:** Use React Server Components where possible
-- **Styling:** Tailwind CSS with shadcn/ui components
-- **State Management:** React Context for global state
-- **File Naming:** kebab-case for files, PascalCase for components
-
-### Backend (Phase 2 - Planned)
-- **Architecture:** 4-layer structure (models → schemas → service → router)
-- **TDD:** Test-Driven Development with pytest
-- **No Foreign Keys:** Application-level relationships only
-- **Package Manager:** Use `uv` (NOT pip)
-
-### Git Workflow
-- **Branches:** `feature/*` for new features
-- **Commits:** Conventional Commits format
-  ```
-  feat: add VLA policy loader
-  fix: resolve camera control bug
-  docs: update README
-  ```
-- **PRs:** English language, descriptive titles
+**ELO System:**
+- Robot-specific rankings (e.g., WidowX leaderboard)
+- Global rankings (across all robots)
+- Bradley-Terry model with confidence intervals
 
 ---
 
-## 🚨 Important Notes
+## 🛠️ Common Workflows
 
-### Phase 1 Development
-1. **Performance:** Target 30+ FPS for MuJoCo rendering
-2. **Browser Compatibility:** Test on Chrome, Firefox, Safari
-3. **Model Size:** Keep VLA models < 100 MB for browser loading
-4. **WASM Loading:** Optimize loading time < 5 seconds
+### Starting New Work
 
-### Phase 2 Preparation
-1. **Reference:** Study lmarena-clone architecture thoroughly
-2. **No Foreign Keys:** Application-level relationships only
-3. **PostgreSQL:** JSONB for VLA execution logs
-4. **ELO System:** Bradley-Terry model with confidence intervals
+```bash
+/start-phase
+# Creates feature branch, reads conventions, sets up environment
+```
 
-### Testing
-- **Phase 1:** Manual browser testing + ESLint
-- **Phase 2:** pytest (backend) + Playwright (frontend)
+### Before Creating PR
+
+```bash
+/review-phase
+# Runs self code review, updates WORKSPACE docs
+```
+
+### Creating PR
+
+```bash
+/create-pr
+# Creates GitHub PR with English format, targeting develop
+```
+
+### Ending Phase
+
+```bash
+/end-phase
+# Merges PR, cleans up branches, prepares for next phase
+```
+
+**Detailed workflows:** Use corresponding skills and slash commands
 
 ---
 
-## 🔗 Reference Projects
+## 🚨 Critical Reminders
 
-- **lmarena-clone** (`../lmarena-clone`): Battle system and leaderboard reference
-- **muwanx** (`./muwanx`): MuJoCo viewer reference (Vue.js)
-- **mujoco_wasm** (`./mujoco_wasm`): MuJoCo WebAssembly build
+1. **ALWAYS check branch** before starting work
+2. **NEVER use foreign keys** in database models
+3. **ALWAYS use English** for PRs and commits
+4. **NEVER edit `components/ui/`** directly (shadcn/ui components)
+5. **ALWAYS use `uv`** for Python deps (NOT pip)
+6. **ALWAYS run ruff** for linting (includes import sorting)
+7. **MANDATORY Chrome DevTools MCP** verification for UI changes
+8. **ALWAYS use --autogenerate** for Alembic migrations
+
+**When in doubt:** Check WORKSPACE docs or invoke relevant skill
 
 ---
 
-## 📞 Support
+## 📞 Getting Help
 
-- **Documentation:** Check WORKSPACE/ folder first
-- **Issues:** GitHub Issues (to be set up)
-- **Reference:** Consult lmarena-clone for Phase 2 patterns
+1. **Documentation:** Check `WORKSPACE/` folder first
+2. **Skills:** Invoke skill for specialized guidance (e.g., `fastapi-patterns`)
+3. **Slash Commands:** Use `/help-kr` for Korean help guide
+4. **Reference Project:** Consult `../lmarena-clone` for Phase 2 patterns
 
 ---
 
 **Created:** 2025-11-01
-**Last Updated:** 2025-11-01
-**Current Phase:** Phase 1 - VLA Visualization
+**Last Updated:** 2025-11-05
+**Current Phase:** MVP Development - Backend Foundation (Week 2-3)
+**Current Feature:** `WORKSPACE/FEATURES/001_MVP.md`

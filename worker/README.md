@@ -1,6 +1,6 @@
-# llmbattler-worker
+# VLA Arena Worker
 
-Data aggregation worker for LLM Battle Arena. Runs hourly cron job to calculate ELO ratings from battle votes.
+Data aggregation worker for VLA Arena. Runs hourly cron job to calculate ELO ratings from battle votes.
 
 ## Quick Start
 
@@ -18,10 +18,10 @@ uv sync
 
 # Run worker manually (one-time execution)
 cd worker
-uv run python -m llmbattler_worker.main
+uv run python -m vlaarena_worker.main
 
 # Or from workspace root
-uv run --package llmbattler-worker python -m llmbattler_worker.main
+uv run --package vlaarena-worker python -m vlaarena_worker.main
 ```
 
 ### Environment Variables
@@ -48,14 +48,11 @@ uv run --with pytest --with pytest-asyncio pytest -s
 ### Code Quality
 
 ```bash
-# Linting
-uvx ruff check src tests
+# Linting (includes import sorting)
+uvx ruff check
 
 # Formatting
-uvx ruff format --check src tests
-
-# Import sorting
-uvx isort --check --profile black src tests
+uvx ruff format --check
 ```
 
 ## How It Works
@@ -97,12 +94,11 @@ uvx isort --check --profile black src tests
 ```
 worker/
 ├── src/
-│   └── llmbattler_worker/
+│   └── vlaarena_worker/
 │       ├── __init__.py
 │       ├── main.py           # Worker entry point
-│       └── aggregators/      # Aggregation logic
+│       └── aggregators/      # ELO aggregation logic
 ├── tests/                    # pytest tests
-├── Dockerfile
 ├── pyproject.toml
 ├── .env.example
 └── README.md
@@ -134,18 +130,29 @@ new_rating_a = rating_a + k * (result - expected_a)
 - **K-Factor**: 32
 - **Minimum Votes**: 5 (for leaderboard display)
 
-## TODO
+## Robot-Specific ELO
 
-- [ ] Implement MongoDB vote reader
-- [ ] Implement ELO calculation algorithm
-- [ ] Implement PostgreSQL writer
-- [ ] Add worker status tracking
-- [ ] Add comprehensive tests
-- [ ] Add error handling and retries
-- [ ] Add metrics/monitoring
+**Key Feature:** VLA Arena calculates separate ELO rankings per robot.
+
+**Tables:**
+- `ModelStatsByRobot` - ELO per (model_id, robot_id)
+- `ModelStatsTotal` - Global ELO across all robots
+
+**Example:**
+```
+OpenVLA 7B:
+- WidowX ELO: 1650 (50 votes)
+- Franka ELO: 1580 (30 votes)
+- Global ELO: 1620 (80 votes)
+```
 
 ## Related Documentation
 
-- [WORKSPACE/CONVENTIONS/backend/](../WORKSPACE/CONVENTIONS/backend/) - Python coding standards
-- [WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md](../WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md) - Leaderboard spec
-- [shared/src/llmbattler_shared/models.py](../shared/src/llmbattler_shared/models.py) - PostgreSQL models
+- [MVP Feature Spec](../WORKSPACE/FEATURES/001_MVP.md) - Worker requirements
+- [SQLModel No Foreign Keys](./.claude/skills/sqlmodel-no-foreign-keys/SKILL.md) - Database modeling
+- [Backend TDD Workflow](./.claude/skills/backend-tdd-workflow/SKILL.md) - Testing guide
+- [shared/src/vlaarena_shared/models.py](../shared/src/vlaarena_shared/models.py) - PostgreSQL models
+
+---
+
+**Last Updated:** 2025-11-05

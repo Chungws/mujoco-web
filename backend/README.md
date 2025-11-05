@@ -1,6 +1,6 @@
-# llmbattler-backend
+# VLA Arena Backend
 
-FastAPI backend for LLM Battle Arena.
+FastAPI backend for VLA model comparison platform.
 
 ## Quick Start
 
@@ -22,12 +22,12 @@ uv sync
 
 # Start development server
 cd backend
-uv run uvicorn llmbattler_backend.main:app --reload --port 8000
+uv run uvicorn vlaarena_backend.main:app --reload --port 8000
 ```
 
 **Alternative (from workspace root):**
 ```bash
-uv run --package llmbattler-backend uvicorn llmbattler_backend.main:app --reload
+uv run --package vlaarena-backend uvicorn vlaarena_backend.main:app --reload
 ```
 
 ### Environment Variables
@@ -53,14 +53,11 @@ uv run pytest -s
 ### Code Quality
 
 ```bash
-# Linting
+# Linting (includes import sorting)
 uvx ruff check
 
 # Formatting
 uvx ruff format --check
-
-# Import sorting
-uvx isort --check --profile black .
 ```
 
 ## Project Structure
@@ -68,14 +65,14 @@ uvx isort --check --profile black .
 ```
 backend/
 ├── src/
-│   └── llmbattler_backend/
+│   └── vlaarena_backend/
 │       ├── __init__.py
 │       ├── main.py           # FastAPI app entry
-│       ├── api/              # API routes
+│       ├── api/              # API routers
 │       ├── services/         # Business logic
-│       └── mongodb/          # MongoDB operations
+│       └── repositories/     # Data access layer
+├── alembic/                  # Database migrations
 ├── tests/                    # pytest tests
-├── Dockerfile
 ├── pyproject.toml
 ├── .env.example
 └── README.md
@@ -87,18 +84,24 @@ Once the server is running, visit:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## TODO
+## Architecture
 
-- [ ] Add database initialization logic
-- [ ] Implement battle creation API
-- [ ] Implement voting API
-- [ ] Implement model management
-- [ ] Implement leaderboard API
-- [ ] Add Alembic migrations (after data model review)
-- [ ] Add comprehensive tests
+**4-Layer Pattern:**
+1. **Models** (shared/src/vlaarena_shared/models.py) - SQLModel database models
+2. **Schemas** (shared/src/vlaarena_shared/schemas.py) - Pydantic request/response schemas
+3. **Services** (services/) - Business logic layer
+4. **Routers** (api/) - API endpoints
+
+**See:** `.claude/skills/fastapi-patterns/SKILL.md` for complete architecture guide.
 
 ## Related Documentation
 
-- [WORKSPACE/CONVENTIONS/backend/](../WORKSPACE/CONVENTIONS/backend/) - Backend conventions
-- [WORKSPACE/FEATURES/001_BATTLE_MVP.md](../WORKSPACE/FEATURES/001_BATTLE_MVP.md) - Battle mode spec
-- [WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md](../WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md) - Leaderboard spec
+- [FastAPI Patterns](./.claude/skills/fastapi-patterns/SKILL.md) - Architecture patterns
+- [Backend TDD Workflow](./.claude/skills/backend-tdd-workflow/SKILL.md) - Test-driven development
+- [SQLModel No Foreign Keys](./.claude/skills/sqlmodel-no-foreign-keys/SKILL.md) - Database modeling
+- [Managing Python Deps](./.claude/skills/managing-python-deps/SKILL.md) - uv dependency management
+- [MVP Feature Spec](../WORKSPACE/FEATURES/001_MVP.md) - Current feature specification
+
+---
+
+**Last Updated:** 2025-11-05
