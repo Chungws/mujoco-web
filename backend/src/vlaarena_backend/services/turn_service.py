@@ -60,61 +60,77 @@ class TurnService:
             TurnResponse with turn_id and episode_ids
 
         Raises:
-            ValueError: If battle not found
+            ValueError: If battle or session not found
+            Exception: If database or MongoDB operations fail
         """
         logger.info(f"Creating turn for battle {battle_id}: {data.instruction[:50]}...")
 
-        # 1. Get battle and validate
-        battle = await self._get_battle(battle_id, db)
-        if not battle:
-            raise ValueError(f"Battle not found: {battle_id}")
+        try:
+            # 1. Get battle and validate
+            battle = await self._get_battle(battle_id, db)
+            if not battle:
+                raise ValueError(f"Battle not found: {battle_id}")
 
-        # Get session to retrieve robot_id and scene_id
-        session = await self._get_session(battle.session_id, db)
-        if not session:
-            raise ValueError(f"Session not found: {battle.session_id}")
+            # Get session to retrieve robot_id and scene_id
+            session = await self._get_session(battle.session_id, db)
+            if not session:
+                raise ValueError(f"Session not found: {battle.session_id}")
 
-        # 2. Create Turn record
-        turn = await self._create_turn_record(battle, data.instruction, db)
+            # 2. Create Turn record
+            turn = await self._create_turn_record(battle, data.instruction, db)
 
-        # 3. Execute left model and save episode
-        left_episode_id = await self._execute_and_save_episode(
-            episode_id=f"ep_{secrets.token_hex(8)}_left",
-            turn=turn,
-            battle=battle,
-            session=session,
-            model_id=battle.left_model_id,
-            side="left",
-            seq_in_turn=0,
-            instruction=data.instruction,
-        )
+            # 3. Execute left model and save episode
+            left_episode_id = await self._execute_and_save_episode(
+                episode_id=f"ep_{secrets.token_hex(8)}_left",
+                turn=turn,
+                battle=battle,
+                session=session,
+                model_id=battle.left_model_id,
+                side="left",
+                seq_in_turn=0,
+                instruction=data.instruction,
+            )
 
-        # 4. Execute right model and save episode
-        right_episode_id = await self._execute_and_save_episode(
-            episode_id=f"ep_{secrets.token_hex(8)}_right",
-            turn=turn,
-            battle=battle,
-            session=session,
-            model_id=battle.right_model_id,
-            side="right",
-            seq_in_turn=1,
-            instruction=data.instruction,
-        )
+            # 4. Execute right model and save episode
+            right_episode_id = await self._execute_and_save_episode(
+                episode_id=f"ep_{secrets.token_hex(8)}_right",
+                turn=turn,
+                battle=battle,
+                session=session,
+                model_id=battle.right_model_id,
+                side="right",
+                seq_in_turn=1,
+                instruction=data.instruction,
+            )
 
-        # 5. Update session last_active_at
-        await self._update_session_last_active(session, db)
+            # 5. Update session last_active_at
+            await self._update_session_last_active(session, db)
 
-        logger.info(
-            f"Turn created: {turn.turn_id}, left={left_episode_id}, right={right_episode_id}"
-        )
+            # Commit transaction
+            await db.commit()
 
-        # 6. Return response
-        return TurnResponse(
-            turn_id=turn.turn_id,
-            left_episode_id=left_episode_id,
-            right_episode_id=right_episode_id,
-            status="completed",
-        )
+            logger.info(
+                f"Turn created: {turn.turn_id}, left={left_episode_id}, right={right_episode_id}"
+            )
+
+            # 6. Return response
+            return TurnResponse(
+                turn_id=turn.turn_id,
+                left_episode_id=left_episode_id,
+                right_episode_id=right_episode_id,
+                status="completed",
+            )
+
+        except ValueError:
+            # Re-raise validation errors (battle/session not found)
+            await db.rollback()
+            raise
+
+        except Exception as e:
+            # Rollback on any database or MongoDB error
+            logger.error(f"Failed to create turn for battle {battle_id}: {e}")
+            await db.rollback()
+            raise
 
     async def _get_battle(self, battle_id: str, db: AsyncSession) -> Battle | None:
         """Get battle by ID"""
