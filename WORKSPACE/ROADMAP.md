@@ -128,7 +128,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [x] ModelStatsTotal model (model_id, global_elo_score, organization, license)
   - [x] WorkerStatus model (status tracking)
   - [x] MongoDB Episode document schema (actions, states, metrics) with Beanie ODM
-  - [ ] API schemas (requests/responses)
+  - [x] API schemas (requests/responses) - Session, Turn, Episode, Vote, Leaderboard with TDD (23 tests)
 
 - [ ] **Repository Layer**
   - [ ] SessionRepository (PostgreSQL CRUD)
@@ -356,16 +356,16 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Milestone | Status | Progress | Target Date |
 |-----------|--------|----------|-------------|
 | Phase 0: Setup | ✅ Complete | 100% | 2025-01-04 |
-| Backend Foundation | 🔄 In Progress | 50% | Week 3 end |
+| Backend Foundation | 🔄 In Progress | 60% | Week 3 end |
 | VLA & MuJoCo | ⏸️ Not Started | 0% | Week 5 end |
 | Frontend & Worker | ⏸️ Not Started | 0% | Week 6 end |
 | Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 30% complete
+**Overall MVP Progress:** 35% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
-- Models & Schemas: 90% (API schemas pending)
+- Models & Schemas: 100% (SQLModel + Pydantic schemas with TDD)
 - Repository layer: 0%
 - Core APIs: 0%
 
@@ -488,10 +488,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-01-04 | Added robot-specific ELO, multi-turn battles | Claude |
 | 2025-01-04 | Variable episode length support | Claude |
 | 2025-11-05 | Database foundation complete (Steps 1-3) | Claude |
+| 2025-11-05 | API schemas complete with TDD (23 tests) | Claude |
 
 ---
 
 **Last Updated:** 2025-11-05
-**Status:** MVP Week 2-3 - Backend Foundation (50% complete)
-**Next Milestone:** Core APIs (Session, Battle, Turn endpoints)
+**Status:** MVP Week 2-3 - Backend Foundation (60% complete)
+**Next Milestone:** Repository Layer & Core APIs
 **Target MVP Completion:** Week 7
