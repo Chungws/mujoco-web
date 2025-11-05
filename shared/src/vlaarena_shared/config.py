@@ -2,8 +2,6 @@
 Shared configuration settings (shared between backend and worker)
 """
 
-from typing import List
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,19 +26,15 @@ class Settings(BaseSettings):
     )
 
     # Database URLs
-    postgres_uri: str = (
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/vlaarena"
-    )
+    postgres_uri: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/vlaarena"
 
     # CORS settings (backend only)
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     @property
-    def cors_origins_list(self) -> List[str]:
+    def cors_origins_list(self) -> list[str]:
         """Parse CORS origins from comma-separated string"""
-        return [
-            origin.strip() for origin in self.cors_origins.split(",") if origin.strip()
-        ]
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     # Model configuration
     # Local dev: ../config/models.yaml (relative to backend/ or worker/)
@@ -63,9 +57,7 @@ class Settings(BaseSettings):
     llm_retry_backoff_base: float = 1.0  # Base delay in seconds (1s, 2s, 4s)
 
     # LLM Mock Mode (for development and testing)
-    use_mock_llm: bool = (
-        False  # Set to True to use mock LLM client instead of real API calls
-    )
+    use_mock_llm: bool = False  # Set to True to use mock LLM client instead of real API calls
 
     # Battle settings
     max_follow_ups: int = 5  # Maximum 5 follow-ups (6 total messages)

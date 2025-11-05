@@ -4,7 +4,6 @@ Based on ADR-002: Database Schema Design
 """
 
 from datetime import UTC, datetime
-from typing import Optional
 
 from sqlalchemy import DateTime
 from sqlmodel import Column, Field, SQLModel
@@ -13,11 +12,11 @@ from sqlmodel import Column, Field, SQLModel
 class Session(SQLModel, table=True):
     __tablename__ = "sessions"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     session_id: str = Field(unique=True, index=True, max_length=50)
     robot_id: str = Field(max_length=50)
     scene_id: str = Field(max_length=50)
-    user_id: Optional[str] = Field(default=None, index=True, max_length=50)
+    user_id: str | None = Field(default=None, index=True, max_length=50)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
         sa_column=Column(DateTime(timezone=True), nullable=False),
@@ -31,7 +30,7 @@ class Session(SQLModel, table=True):
 class Battle(SQLModel, table=True):
     __tablename__ = "battles"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     battle_id: str = Field(unique=True, index=True, max_length=50)
     session_id: str = Field(index=True, max_length=50)
     seq_in_session: int = Field(index=True)
@@ -53,7 +52,7 @@ class Battle(SQLModel, table=True):
 class Turn(SQLModel, table=True):
     __tablename__ = "turns"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     turn_id: str = Field(unique=True, index=True, max_length=50)
 
     session_id: str = Field(index=True, max_length=50)
@@ -72,7 +71,7 @@ class Turn(SQLModel, table=True):
 class Vote(SQLModel, table=True):
     __tablename__ = "votes"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     vote_id: str = Field(unique=True, index=True, max_length=50)
     battle_id: str = Field(unique=True, index=True, max_length=50)
     session_id: str = Field(index=True, max_length=50)
@@ -86,10 +85,10 @@ class Vote(SQLModel, table=True):
     vote: str = Field(max_length=20)
 
     processing_status: str = Field(default="pending", max_length=20, index=True)
-    processed_at: Optional[datetime] = Field(
+    processed_at: datetime | None = Field(
         default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
     )
-    error_message: Optional[str] = Field(default=None)
+    error_message: str | None = Field(default=None)
     voted_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
         sa_column=Column(DateTime(timezone=True), nullable=False, index=True),
@@ -99,7 +98,7 @@ class Vote(SQLModel, table=True):
 class ModelStatsByRobot(SQLModel, table=True):
     __tablename__ = "model_stats_by_robot"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     model_id: str = Field(index=True, max_length=255)
     robot_id: str = Field(index=True, max_length=50)
 
@@ -119,7 +118,7 @@ class ModelStatsByRobot(SQLModel, table=True):
 class ModelStatsTotal(SQLModel, table=True):
     __tablename__ = "model_stats_total"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     model_id: str = Field(unique=True, index=True, max_length=255)
 
     elo_score: int = Field(default=1500, index=True)
@@ -142,7 +141,7 @@ class ModelStatsTotal(SQLModel, table=True):
 class WorkerStatus(SQLModel, table=True):
     __tablename__ = "worker_status"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     worker_name: str = Field(unique=True, max_length=100)
     last_run_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
@@ -150,4 +149,4 @@ class WorkerStatus(SQLModel, table=True):
     )
     status: str = Field(max_length=50)
     votes_processed: int = Field(default=0)
-    error_message: Optional[str] = Field(default=None, max_length=1000)
+    error_message: str | None = Field(default=None, max_length=1000)
