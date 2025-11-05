@@ -244,3 +244,127 @@ class TestTurnAPI:
         assert result["left_episode_id"].startswith("ep_")
         assert result["right_episode_id"].startswith("ep_")
         assert result["left_episode_id"] != result["right_episode_id"]
+
+
+class TestTurnAPIErrorHandling:
+    """
+    Test error handling for Turn API
+
+    Verifies that database errors are properly handled with rollback
+    """
+
+    def test_create_turn_db_error_rolls_back(self, client: TestClient):
+        """
+        Test Turn API handles database errors with rollback
+
+        Scenario:
+        1. Create session and battle
+        2. Mock db.commit() to raise exception
+        3. Attempt to create turn
+        4. Expect 500 error
+        5. Verify no orphan Turn records in database
+        """
+        from unittest.mock import AsyncMock, patch
+
+        # Arrange: Create session and battle
+        init_response = client.post(
+            "/api/sessions/init",
+            json={
+                "robot_id": "widowx",
+                "scene_id": "table_pick_place",
+            },
+        )
+        assert init_response.status_code == 201
+        battle_id = init_response.json()["battle_id"]
+
+        # Act: Mock db.commit() to simulate database error
+        with patch(
+            "vlaarena_backend.api.battles.AsyncSession.commit",
+            new_callable=AsyncMock,
+            side_effect=Exception("Database commit failed"),
+        ):
+            response = client.post(
+                f"/api/battles/{battle_id}/turns",
+                json={"instruction": "Pick up the cube"},
+            )
+
+        # Assert: Expect 500 error (internal server error)
+        assert response.status_code == 500
+        assert "Failed to create turn" in response.json()["detail"]
+
+    def test_create_turn_mongodb_error_rolls_back(self, client: TestClient):
+        """
+        Test Turn API handles MongoDB errors with rollback
+
+        Scenario:
+        1. Create session and battle
+        2. Mock Episode.insert() to raise exception
+        3. Attempt to create turn
+        4. Expect 500 error
+        5. Verify no orphan Turn records (rollback worked)
+        """
+        from unittest.mock import AsyncMock, patch
+
+        # Arrange: Create session and battle
+        init_response = client.post(
+            "/api/sessions/init",
+            json={
+                "robot_id": "widowx",
+                "scene_id": "table_pick_place",
+            },
+        )
+        assert init_response.status_code == 201
+        battle_id = init_response.json()["battle_id"]
+
+        # Act: Mock Episode.insert() to simulate MongoDB error
+        with patch(
+            "vlaarena_shared.mongodb_models.Episode.insert",
+            new_callable=AsyncMock,
+            side_effect=Exception("MongoDB insert failed"),
+        ):
+            response = client.post(
+                f"/api/battles/{battle_id}/turns",
+                json={"instruction": "Pick up the cube"},
+            )
+
+        # Assert: Expect 500 error
+        assert response.status_code == 500
+        assert "Failed to create turn" in response.json()["detail"]
+
+    def test_create_turn_vla_service_error_rolls_back(self, client: TestClient):
+        """
+        Test Turn API handles VLA service errors with rollback
+
+        Scenario:
+        1. Create session and battle
+        2. Mock MockVLAService.generate_episode() to raise exception
+        3. Attempt to create turn
+        4. Expect 500 error
+        5. Verify rollback occurred
+        """
+        from unittest.mock import patch
+
+        # Arrange: Create session and battle
+        init_response = client.post(
+            "/api/sessions/init",
+            json={
+                "robot_id": "widowx",
+                "scene_id": "table_pick_place",
+            },
+        )
+        assert init_response.status_code == 201
+        battle_id = init_response.json()["battle_id"]
+
+        # Act: Mock VLA service to simulate failure
+        with patch(
+            "vlaarena_backend.services.turn_service.MockVLAService.generate_episode",
+            side_effect=Exception("VLA inference failed"),
+        ):
+            response = client.post(
+                f"/api/battles/{battle_id}/turns",
+                json={"instruction": "Pick up the cube"},
+            )
+
+        # Assert: Expect 500 error
+        assert response.status_code == 500
+        assert "Failed to create turn" in response.json()["detail"]
