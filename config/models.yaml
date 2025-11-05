@@ -1,112 +1,37 @@
-# Model Configuration for llmbattler
+# Model Configuration for VLA Arena
 #
-# This file defines all available LLM models for battle mode.
-# All models must expose OpenAI-compatible /v1/chat/completions endpoint.
+# This file defines all available VLA (Vision-Language-Action) models for battle mode.
+# These models are used for robot manipulation tasks in MuJoCo simulation.
 #
 # Field descriptions:
 # - id: System internal ID (used in database)
 # - name: Display name for frontend
-# - model: Model name to send in API request (e.g., "gemma3:1b")
-# - base_url: Base URL for LLM API endpoint
-#   - Development (host): http://localhost:11434/v1
-#   - Production (Docker): http://ollama:11434/v1 (Docker service name)
-#   - Note: Using 'ollama' works in both dev (docker compose --profile dev) and prod
+# - model: Model identifier or checkpoint path
+# - base_url: Base URL for VLA inference service endpoint
+#   - Development: Will be implemented with mock VLA service
+#   - Production: Will point to actual VLA inference service
 # - api_key_env: Environment variable name for API key (null for local models)
 # - organization: Model provider/organization
 # - license: "proprietary" or "open-source"
 # - status: "active" or "inactive" (inactive models won't be used in battles)
 
 models:
-  # Test configuration: 10 variants of gemma3:1b for local battle testing
-  # All route to the same model but generate different responses due to sampling
-  # (Useful when you can only run 1 model locally due to resource constraints)
+  # MVP Configuration: 2 VLA models for WidowX robot
 
-  - id: gemma3-fast
-    name: Gemma 3 Fast
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
+  - id: openvla-7b
+    name: OpenVLA 7B
+    model: openvla/openvla-7b
+    base_url: http://localhost:8001  # Mock VLA service
     api_key_env: null
-    organization: Google
+    organization: OpenVLA Team
     license: open-source
     status: active
 
-  - id: gemma3-creative
-    name: Gemma 3 Creative
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
+  - id: octo-base
+    name: Octo Base
+    model: octo-base
+    base_url: http://localhost:8001  # Mock VLA service
     api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-analytical
-    name: Gemma 3 Analytical
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-concise
-    name: Gemma 3 Concise
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-detailed
-    name: Gemma 3 Detailed
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-balanced
-    name: Gemma 3 Balanced
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-technical
-    name: Gemma 3 Technical
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-casual
-    name: Gemma 3 Casual
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-formal
-    name: Gemma 3 Formal
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
-    license: open-source
-    status: active
-
-  - id: gemma3-friendly
-    name: Gemma 3 Friendly
-    model: gemma3:1b
-    base_url: http://ollama:11434/v1
-    api_key_env: null
-    organization: Google
+    organization: UC Berkeley
     license: open-source
     status: active

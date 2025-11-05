@@ -97,6 +97,24 @@ class VoteResponse(BaseModel):
     revealed_models: RevealedModels
 
 
+# ==================== Models Schemas ====================
+
+
+class ModelInfo(BaseModel):
+    """Single model info for GET /api/models"""
+
+    model_id: str
+    name: str
+    provider: str
+    status: Literal["active", "inactive"]
+
+
+class ModelsListResponse(BaseModel):
+    """Response schema for GET /api/models"""
+
+    models: list[ModelInfo]
+
+
 # ==================== Leaderboard Schemas ====================
 
 
