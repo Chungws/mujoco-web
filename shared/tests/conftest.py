@@ -2,12 +2,11 @@
 Pytest configuration and fixtures for shared package tests
 """
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest_asyncio
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
-
 from vlaarena_shared.mongodb_models import Episode
 
 

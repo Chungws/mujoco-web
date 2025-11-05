@@ -4,15 +4,13 @@ MongoDB connection management using Beanie ODM
 Provides async MongoDB connection and initialization for VLA Arena.
 """
 
-from typing import Optional
-
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from .mongodb_models import Episode
 
 # Global MongoDB client
-mongodb_client: Optional[AsyncIOMotorClient] = None
+mongodb_client: AsyncIOMotorClient | None = None
 
 
 async def connect_mongodb(mongodb_uri: str, database_name: str) -> None:

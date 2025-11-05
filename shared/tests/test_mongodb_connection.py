@@ -5,7 +5,6 @@ Tests connection, disconnection, and client retrieval
 """
 
 import pytest
-
 from vlaarena_shared.mongodb import (
     connect_mongodb,
     disconnect_mongodb,

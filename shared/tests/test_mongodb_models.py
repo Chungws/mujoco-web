@@ -11,7 +11,6 @@ from datetime import UTC, datetime
 
 import pytest
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
 from vlaarena_shared.mongodb_models import Episode, Metrics, State
 
 

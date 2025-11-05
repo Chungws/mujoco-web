@@ -4,7 +4,7 @@ Based on ADR-002: Database Schema Design
 """
 
 from datetime import UTC, datetime
-from typing import Optional
+from typing import ClassVar
 
 from beanie import Document
 from pydantic import BaseModel, Field
@@ -33,9 +33,9 @@ class Metrics(BaseModel):
     total_steps: int = Field(description="Actual steps executed")
     max_steps: int = Field(description="Configured maximum steps")
     terminated_early: bool = Field(default=False)
-    final_distance_to_goal: Optional[float] = Field(default=None)
+    final_distance_to_goal: float | None = Field(default=None)
     collision_count: int = Field(default=0)
-    gripper_opened_at_step: Optional[int] = Field(default=None)
+    gripper_opened_at_step: int | None = Field(default=None)
 
 
 class Episode(Document):
@@ -63,9 +63,7 @@ class Episode(Document):
 
     # Execution data (variable length, up to EPISODE_MAX_STEPS)
     actions: list[list[float]] = Field(description="8-dim actions for each step")
-    states: list[State] = Field(
-        description="MuJoCo states (qpos, qvel, time) for replay"
-    )
+    states: list[State] = Field(description="MuJoCo states (qpos, qvel, time) for replay")
 
     # Metrics (small summary)
     metrics: Metrics = Field(description="Episode performance metrics")
@@ -80,7 +78,7 @@ class Episode(Document):
     class Settings:
         name = "episodes"
         use_state_management = True
-        indexes = [
+        indexes: ClassVar = [
             "episode_id",
             [("battle_id", 1), ("side", 1)],
             "turn_id",

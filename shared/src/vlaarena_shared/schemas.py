@@ -3,7 +3,7 @@ Pydantic schemas for API requests/responses (shared between backend and frontend
 """
 
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -25,7 +25,7 @@ class SessionCreate(BaseModel):
     """Request schema for creating a new session"""
 
     prompt: str = Field(..., min_length=1, max_length=10000)
-    user_id: Optional[str] = None  # Optional anonymous user ID (UUID string)
+    user_id: str | None = None  # Optional anonymous user ID (UUID string)
 
 
 class SessionResponse(BaseModel):
@@ -34,7 +34,7 @@ class SessionResponse(BaseModel):
     session_id: str
     battle_id: str
     message_id: str  # Always "msg_1" for first message
-    responses: List[Response]
+    responses: list[Response]
 
 
 class SessionItem(BaseModel):
@@ -49,7 +49,7 @@ class SessionItem(BaseModel):
 class SessionListResponse(BaseModel):
     """Response schema for GET /api/sessions"""
 
-    sessions: List[SessionItem]
+    sessions: list[SessionItem]
     total: int
 
 
@@ -67,7 +67,7 @@ class BattleResponse(BaseModel):
 
     battle_id: str
     message_id: str
-    responses: List[Response]
+    responses: list[Response]
 
 
 class FollowUpCreate(BaseModel):
@@ -81,7 +81,7 @@ class FollowUpResponse(BaseModel):
 
     battle_id: str
     message_id: str
-    responses: List[Response]
+    responses: list[Response]
     message_count: int  # Total messages in conversation (1-6)
     max_messages: int = 6  # Maximum allowed messages
 
@@ -92,9 +92,9 @@ class BattleItem(BaseModel):
     battle_id: str
     left_model_id: str
     right_model_id: str
-    conversation: List[dict]
+    conversation: list[dict]
     status: str
-    vote: Optional[str] = None  # Only present if status is 'voted'
+    vote: str | None = None  # Only present if status is 'voted'
     created_at: datetime
 
 
@@ -102,7 +102,7 @@ class BattleListResponse(BaseModel):
     """Response schema for GET /api/sessions/{session_id}/battles"""
 
     session_id: str
-    battles: List[BattleItem]
+    battles: list[BattleItem]
 
 
 # ==================== Vote Schemas ====================
@@ -144,7 +144,7 @@ class ModelInfo(BaseModel):
 class ModelsListResponse(BaseModel):
     """Response schema for GET /api/models"""
 
-    models: List[ModelInfo]
+    models: list[ModelInfo]
 
 
 # ==================== Leaderboard Schemas ====================
@@ -175,7 +175,7 @@ class LeaderboardMetadata(BaseModel):
 class LeaderboardResponse(BaseModel):
     """Response schema for GET /api/leaderboard"""
 
-    leaderboard: List[ModelStatsResponse]
+    leaderboard: list[ModelStatsResponse]
     metadata: LeaderboardMetadata
 
 
@@ -186,5 +186,5 @@ class ErrorResponse(BaseModel):
     """Standard error response"""
 
     error: str
-    detail: Optional[str] = None
+    detail: str | None = None
     status_code: int
