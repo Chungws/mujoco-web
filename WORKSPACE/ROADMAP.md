@@ -145,9 +145,16 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [ ] GET /api/battles/{battle_id} (get battle details with turns)
   - [ ] POST /api/battles/{battle_id}/turns (create new turn with episodes)
   - [ ] POST /api/votes (submit vote for turn)
-  - [ ] GET /api/models (list available models)
+  - [x] GET /api/models (list available models) - TDD with 3 tests
   - [ ] GET /api/leaderboard (robot-specific and global rankings)
   - [x] Health check endpoint - Already implemented
+
+- [x] **Mock VLA Service (for MVP development)**
+  - [x] MockVLAService implementation - TDD with 9 tests
+  - [x] Episode generation (actions, states, metrics)
+  - [x] Variable-length episodes (20-50 steps)
+  - [x] Model-specific deterministic behavior
+  - [x] Ready for Turn API integration
 
 #### Acceptance Criteria
 - ✅ PostgreSQL + MongoDB running in Docker
