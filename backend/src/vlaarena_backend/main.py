@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from vlaarena_backend.api import battles, models, sessions
+from vlaarena_backend.api import battles, episodes, models, sessions
 
 # Temporary: Comment out leaderboard while implementing VLA Arena MVP
 # from vlaarena_backend.api import leaderboard
@@ -83,5 +83,6 @@ async def health_check():
 app.include_router(sessions.router, prefix="/api", tags=["sessions"])
 app.include_router(models.router, prefix="/api", tags=["models"])
 app.include_router(battles.router, prefix="/api", tags=["battles"])
+app.include_router(episodes.router, prefix="/api", tags=["episodes"])
 # Temporary: Comment out while implementing VLA Arena MVP
 # app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
