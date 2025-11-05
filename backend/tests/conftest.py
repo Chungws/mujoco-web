@@ -14,13 +14,16 @@ os.environ["MODELS_CONFIG_PATH"] = "config/models.yaml"  # Relative to backend d
 
 import pytest
 import pytest_asyncio
+from beanie import init_beanie
 from fastapi.testclient import TestClient
+from mongomock_motor import AsyncMongoMockClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
 from vlaarena_backend.main import app
+from vlaarena_shared.mongodb_models import Episode
 
 
 # Temporary: Comment out LLM client imports (not needed for VLA Arena MVP)
@@ -92,7 +95,29 @@ async def db():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client():
+async def mongodb():
+    """MongoDB test fixture with in-memory database using mongomock-motor
+
+    Provides a fresh MongoDB database for each test with Beanie ODM initialized.
+    All MongoDB operations in tests will use this in-memory database.
+    """
+    # Create in-memory MongoDB client
+    client = AsyncMongoMockClient()
+
+    # Initialize Beanie with Episode document model
+    await init_beanie(
+        database=client.test_db,
+        document_models=[Episode],
+    )
+
+    yield client
+
+    # Cleanup: Drop database after test
+    await client.drop_database("test_db")
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client(mongodb):
     """Test client for FastAPI app with in-memory SQLite database
 
     Each test gets a fresh in-memory database that is automatically
