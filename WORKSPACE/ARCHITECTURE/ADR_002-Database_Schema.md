@@ -303,17 +303,6 @@ worker_status:
     // ... variable length
   ],
 
-  // Metrics (small summary)
-  metrics: {
-    success: true,
-    total_steps: 35,  // Actual steps executed
-    max_steps: 50,  // Configured maximum
-    terminated_early: false,
-    final_distance_to_goal: 0.05,
-    collision_count: 0,
-    gripper_opened_at_step: 25
-  },
-
   // Metadata
   duration_ms: 5120,  // Execution time
   created_at: ISODate("2025-01-04T12:34:56.789Z")
@@ -327,8 +316,8 @@ worker_status:
 - **state total**: ~152 bytes (with overhead → ~200 bytes)
 - **50 states (max)**: 10 KB
 - **50 actions (max)** (8-dim): 1.6 KB
-- **metrics**: < 1 KB
-- **Total**: ~13 KB per episode (maximum, actual size varies)
+- **metadata** (duration_ms, etc.): < 0.5 KB
+- **Total**: ~12 KB per episode (maximum, actual size varies)
 - **Example**: 20-step episode = ~5 KB
 
 **Indexes:**
