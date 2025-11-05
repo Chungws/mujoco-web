@@ -1,116 +1,85 @@
 """
-Pydantic schemas for API requests/responses (shared between backend and frontend)
+Pydantic schemas for API requests/responses (VLA Arena MVP)
+Based on WORKSPACE/FEATURES/001_MVP.md specification
 """
 
-from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
-# ==================== Common Schemas ====================
-
-
-class Response(BaseModel):
-    """Single model response in a battle"""
-
-    position: Literal["left", "right"]
-    text: str
-    latency_ms: int
-
-
 # ==================== Session Schemas ====================
 
 
-class SessionCreate(BaseModel):
-    """Request schema for creating a new session"""
+class SessionInitRequest(BaseModel):
+    """Request schema for POST /api/sessions/init"""
 
-    prompt: str = Field(..., min_length=1, max_length=10000)
-    user_id: str | None = None  # Optional anonymous user ID (UUID string)
+    robot_id: str = Field(..., min_length=1, max_length=50)
+    scene_id: str = Field(..., min_length=1, max_length=50)
 
 
 class SessionResponse(BaseModel):
-    """Response schema for session creation (includes first battle)"""
+    """Response schema for POST /api/sessions/init"""
 
     session_id: str
     battle_id: str
-    message_id: str  # Always "msg_1" for first message
-    responses: list[Response]
+    left_model: str = "???"  # Hidden until vote
+    right_model: str = "???"  # Hidden until vote
 
 
-class SessionItem(BaseModel):
-    """Single session item in session list"""
-
-    session_id: str
-    title: str
-    created_at: datetime
-    last_active_at: datetime
+# ==================== Turn Schemas (Battle) ====================
 
 
-class SessionListResponse(BaseModel):
-    """Response schema for GET /api/sessions"""
+class TurnRequest(BaseModel):
+    """Request schema for POST /api/battles/{battle_id}/turns"""
 
-    sessions: list[SessionItem]
-    total: int
-
-
-# ==================== Battle Schemas ====================
+    instruction: str = Field(..., min_length=1)
 
 
-class BattleCreate(BaseModel):
-    """Request schema for creating a new battle"""
+class TurnResponse(BaseModel):
+    """Response schema for POST /api/battles/{battle_id}/turns"""
 
-    prompt: str = Field(..., min_length=1, max_length=10000)
-
-
-class BattleResponse(BaseModel):
-    """Response schema for battle creation"""
-
-    battle_id: str
-    message_id: str
-    responses: list[Response]
+    turn_id: str
+    left_episode_id: str
+    right_episode_id: str
+    status: str  # "completed", "failed", "running"
 
 
-class FollowUpCreate(BaseModel):
-    """Request schema for follow-up message"""
-
-    prompt: str = Field(..., min_length=1, max_length=10000)
+# ==================== Episode Schemas ====================
 
 
-class FollowUpResponse(BaseModel):
-    """Response schema for follow-up message"""
+class EpisodeState(BaseModel):
+    """Single state in an episode (qpos, qvel, time)"""
 
-    battle_id: str
-    message_id: str
-    responses: list[Response]
-    message_count: int  # Total messages in conversation (1-6)
-    max_messages: int = 6  # Maximum allowed messages
+    qpos: list[float]
+    qvel: list[float]
+    time: float
 
 
-class BattleItem(BaseModel):
-    """Single battle item in battle list"""
+class EpisodeMetrics(BaseModel):
+    """Episode execution metrics"""
 
-    battle_id: str
-    left_model_id: str
-    right_model_id: str
-    conversation: list[dict]
-    status: str
-    vote: str | None = None  # Only present if status is 'voted'
-    created_at: datetime
+    success: bool
+    total_steps: int
+    max_steps: int
+    final_distance_to_goal: float
 
 
-class BattleListResponse(BaseModel):
-    """Response schema for GET /api/sessions/{session_id}/battles"""
+class EpisodeResponse(BaseModel):
+    """Response schema for GET /api/episodes/{episode_id}"""
 
-    session_id: str
-    battles: list[BattleItem]
+    episode_id: str
+    actions: list[list[float]]  # Variable length, up to 50
+    states: list[EpisodeState]  # Variable length, up to 50
+    metrics: EpisodeMetrics
 
 
 # ==================== Vote Schemas ====================
 
 
-class VoteCreate(BaseModel):
-    """Request schema for submitting a vote"""
+class VoteRequest(BaseModel):
+    """Request schema for POST /api/votes"""
 
+    battle_id: str
     vote: Literal["left_better", "right_better", "tie", "both_bad"]
 
 
@@ -122,61 +91,29 @@ class RevealedModels(BaseModel):
 
 
 class VoteResponse(BaseModel):
-    """Response schema for vote submission"""
+    """Response schema for POST /api/votes"""
 
-    battle_id: str
-    vote: str
+    vote_id: str
     revealed_models: RevealedModels
-
-
-# ==================== Model Schemas ====================
-
-
-class ModelInfo(BaseModel):
-    """Single model information"""
-
-    model_id: str
-    name: str
-    provider: str
-    status: Literal["active", "inactive"]
-
-
-class ModelsListResponse(BaseModel):
-    """Response schema for GET /api/models"""
-
-    models: list[ModelInfo]
 
 
 # ==================== Leaderboard Schemas ====================
 
 
-class ModelStatsResponse(BaseModel):
-    """Single model statistics in leaderboard"""
+class ModelRanking(BaseModel):
+    """Single model ranking in leaderboard"""
 
-    rank: int
     model_id: str
-    model_name: str
+    name: str
     elo_score: int
-    elo_ci: float
     vote_count: int
     win_rate: float
-    organization: str
-    license: str
-
-
-class LeaderboardMetadata(BaseModel):
-    """Leaderboard metadata"""
-
-    total_models: int
-    total_votes: int
-    last_updated: datetime
 
 
 class LeaderboardResponse(BaseModel):
     """Response schema for GET /api/leaderboard"""
 
-    leaderboard: list[ModelStatsResponse]
-    metadata: LeaderboardMetadata
+    rankings: list[ModelRanking]
 
 
 # ==================== Error Schemas ====================
