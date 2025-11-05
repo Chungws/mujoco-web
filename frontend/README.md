@@ -1,193 +1,183 @@
-# llmbattler-frontend
+# VLA Arena Frontend
 
-Next.js 15 frontend for LLM Battle Arena with App Router, React Server Components, and shadcn/ui.
+Next.js 15 application for VLA model comparison platform.
+
+## Tech Stack
+
+- **Framework:** Next.js 15 with App Router
+- **UI Library:** React 18, shadcn/ui
+- **Styling:** Tailwind CSS
+- **3D Rendering:** Three.js, MuJoCo WASM
+- **API Client:** Custom apiClient (centralized)
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 20+
-- npm
-
-### Development Setup
-
 ```bash
-cd frontend
-
 # Install dependencies
 npm install
 
-# Start development server with Turbopack
-npm run dev
-```
+# Start development server
+npm run dev  # http://localhost:3000
 
-**Visit:** http://localhost:3000
-
-### Environment Variables
-
-Copy `.env.example` to `.env.local` and configure:
-
-```bash
-cp .env.example .env.local
-```
-
-Key settings:
-- `NEXT_PUBLIC_API_URL`: Backend API URL (default: http://localhost:8000)
-
-### Building for Production
-
-```bash
+# Build for production
 npm run build
+
+# Start production server
 npm start
 ```
 
-### Linting
+## Code Quality
 
 ```bash
+# Linting
 npm run lint
+
+# If UI changed: Chrome DevTools MCP verification (MANDATORY)
+# See: .claude/skills/frontend-ui-testing/SKILL.md
 ```
 
 ## Project Structure
 
 ```
 frontend/
-├── app/                      # Next.js App Router (no src/)
-│   ├── layout.tsx            # Root layout with ThemeProvider
-│   ├── page.tsx              # Home page
-│   ├── globals.css           # Global styles with CSS variables
-│   ├── battle/               # Battle mode
-│   │   └── page.tsx
-│   └── leaderboard/          # Leaderboard
-│       └── page.tsx
-├── components/               # React components
-│   └── ui/                   # shadcn/ui components
-├── hooks/                    # Custom React hooks
-├── lib/                      # Utilities
-│   └── utils.ts              # cn() helper
-├── services/                 # API clients
-├── public/                   # Static assets
-├── package.json
-├── components.json           # shadcn/ui config
-├── tsconfig.json
-├── tailwind.config.ts
-├── next.config.ts
-├── eslint.config.mjs
-├── Dockerfile
-└── README.md
+├── app/                    # Next.js App Router
+│   ├── battle/             # Battle page (VLA comparison)
+│   │   ├── page.tsx        # Server Component
+│   │   ├── battle-client.tsx  # Client Component
+│   │   ├── service.ts      # API calls
+│   │   └── _types.ts       # Type definitions
+│   ├── leaderboard/        # Leaderboard page
+│   │   ├── page.tsx        # Server Component
+│   │   ├── leaderboard-client.tsx  # Client Component
+│   │   ├── service.ts      # API calls
+│   │   ├── use-leaderboard.ts  # Custom hook
+│   │   └── _types.ts       # Type definitions
+│   ├── api/                # API routes
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page
+├── components/             # Shared components
+│   └── ui/                 # shadcn/ui components (DO NOT EDIT)
+├── lib/                    # Utilities
+│   ├── api-client.ts       # API client
+│   └── mujoco/             # MuJoCo WASM integration
+└── public/                 # Static assets
 ```
 
-## Tech Stack
+## Conventions
 
-- **Next.js 15** - React framework with App Router + Turbopack
-- **React 19** - UI library
-- **TypeScript 5** - Type safety
-- **Tailwind CSS v4** - Utility-first CSS with CSS variables
-- **shadcn/ui** - Re-usable components (Radix UI + Tailwind)
-- **next-themes** - Dark mode support
-- **lucide-react** - Icon library
-- **ESLint** - Code linting (flat config)
+### File Naming
 
-## Features
+- `page.tsx` - Server Component (async, data fetching)
+- `*-client.tsx` - Client Component (interactive, hooks)
+- `service.ts` - API calls (using apiClient)
+- `_types.ts` - Type definitions (private, not routes)
+- `use-*.ts` - Custom React hooks
 
-### Design System
-- shadcn/ui components (New York style)
-- CSS variables for theming
-- Dark mode with next-themes
-- Responsive design
-- Accessible components (Radix UI)
+### Architecture Pattern (RSC)
 
-### Pages
+**Server Components (page.tsx):**
+```typescript
+// app/battle/page.tsx
+export default async function BattlePage() {
+  // Server-side data fetching
+  const initialData = await fetchInitialData();
 
-**Home (`/`)**
-- Landing page with navigation
-- Links to Battle and Leaderboard
-- Responsive layout
+  return <BattleClient initialData={initialData} />;
+}
+```
 
-**Battle Mode (`/battle`)**
-- Placeholder for battle UI
-- TODO: Full implementation
+**Client Components (*-client.tsx):**
+```typescript
+"use client";
 
-**Leaderboard (`/leaderboard`)**
-- Placeholder for leaderboard UI
-- TODO: Full implementation
+// app/battle/battle-client.tsx
+export function BattleClient({ initialData }) {
+  const [state, setState] = useState(initialData);
+  // Client-side interactivity
 
-## shadcn/ui
+  return <div>...</div>;
+}
+```
 
-Add components using the CLI:
+### Styling
+
+- Use **Tailwind CSS** for styling
+- Use **shadcn/ui** components (NOT raw HTML)
+- Install new components: `npx shadcn@latest add <component>`
+- **NEVER** edit `components/ui/` files directly
+
+### API Calls
+
+Always use the centralized `apiClient`:
+
+```typescript
+// app/battle/service.ts
+import { apiClient } from "@/lib/api-client";
+
+export async function createSession(data: CreateSessionRequest) {
+  return apiClient.post<SessionResponse>("/sessions/init", data);
+}
+```
+
+## UI Verification (MANDATORY)
+
+**All UI changes MUST be verified with Chrome DevTools MCP before committing.**
 
 ```bash
-npx shadcn@latest add button
-npx shadcn@latest add card
-npx shadcn@latest add textarea
-# etc.
+# 1. Start dev server
+npm run dev
+
+# 2. Use Chrome DevTools MCP tools:
+mcp__chrome-devtools__navigate_page({ url: "http://localhost:3000/battle" })
+mcp__chrome-devtools__take_snapshot()
+mcp__chrome-devtools__list_console_messages()
 ```
 
-**Configuration:** `components.json`
+**See:** `.claude/skills/frontend-ui-testing/SKILL.md` for complete verification guide.
 
-## TODO
+## Common Tasks
 
-### Battle UI (Phase 1.4)
-- [ ] Add shadcn/ui components (Button, Card, Textarea, ScrollArea)
-- [ ] Prompt input field
-- [ ] Side-by-side response display
-- [ ] Conversation history
-- [ ] Follow-up messages support (max 6 total)
-- [ ] Message counter
-- [ ] Voting buttons (Left/Right/Tie/Both Bad)
-- [ ] Model reveal after voting
-- [ ] Loading states (Spinner, Skeleton)
-- [ ] Error handling (Alert component)
+### Adding a New Page
 
-### Leaderboard UI (Phase 2.4)
-- [ ] Add shadcn/ui Table component
-- [ ] Ranking table (Rank, Model, ELO, CI, Votes, Org, License)
-- [ ] Search/filter with Input component
-- [ ] Sortable columns
-- [ ] Metadata display (Badge, Card)
-- [ ] Loading states
-- [ ] Error handling
+```bash
+# 1. Create directory structure
+mkdir -p app/my-feature
 
-### API Integration
-- [ ] Create API clients (`services/`)
-  - [ ] Battle API (create, followup, vote)
-  - [ ] Leaderboard API (get rankings)
-  - [ ] Models API (list models)
-- [ ] Add custom hooks (`hooks/`)
-  - [ ] `useBattle()` - Battle state management
-  - [ ] `useLeaderboard()` - Leaderboard data fetching
-  - [ ] `useModels()` - Available models list
-- [ ] Error handling and loading states
-- [ ] TypeScript types for API responses
+# 2. Create files
+touch app/my-feature/page.tsx          # Server Component
+touch app/my-feature/my-feature-client.tsx  # Client Component
+touch app/my-feature/service.ts        # API calls
+touch app/my-feature/_types.ts         # Types
 
-### UI Components
-- [ ] Battle components
-  - [ ] BattleCard
-  - [ ] ResponseDisplay
-  - [ ] VoteButtons
-  - [ ] MessageCounter
-- [ ] Leaderboard components
-  - [ ] LeaderboardTable
-  - [ ] ModelRow
-  - [ ] RankBadge
-- [ ] Shared components (from shadcn/ui)
-  - [ ] Button
-  - [ ] Card
-  - [ ] Input
-  - [ ] Textarea
-  - [ ] Table
-  - [ ] Badge
-  - [ ] Spinner
-  - [ ] Alert
+# 3. Implement using pattern from battle/ or leaderboard/
 
-### Testing & Polish
-- [ ] Chrome DevTools MCP verification
-- [ ] Responsive design testing
-- [ ] Dark mode testing
-- [ ] Accessibility testing
-- [ ] Error boundaries
+# 4. Verify with Chrome DevTools MCP (MANDATORY)
+```
+
+### Adding shadcn/ui Component
+
+```bash
+# Install component
+npx shadcn@latest add button
+
+# Use in code
+import { Button } from "@/components/ui/button";
+```
+
+## Environment Variables
+
+Create `.env.local`:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
 ## Related Documentation
 
-- [WORKSPACE/CONVENTIONS/frontend/](../WORKSPACE/CONVENTIONS/frontend/) - Frontend conventions
-- [WORKSPACE/FEATURES/001_BATTLE_MVP.md](../WORKSPACE/FEATURES/001_BATTLE_MVP.md) - Battle mode spec
-- [WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md](../WORKSPACE/FEATURES/002_LEADERBOARD_MVP.md) - Leaderboard spec
-- [shadcn/ui Documentation](https://ui.shadcn.com) - Component library
+- [Next.js RSC Patterns](./.claude/skills/nextjs-rsc-patterns/SKILL.md)
+- [Using shadcn Components](./.claude/skills/using-shadcn-components/SKILL.md)
+- [Frontend UI Testing](./.claude/skills/frontend-ui-testing/SKILL.md)
+
+---
+
+**Last Updated:** 2025-11-05
