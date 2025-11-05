@@ -25,6 +25,15 @@ logger = logging.getLogger(__name__)
 class TurnService:
     """Service for managing battle turns and episode generation"""
 
+    # TODO: Refactor to use Protocol/ABC for VLA service interface
+    # Current design tightly couples TurnService to MockVLAService.
+    # When implementing real VLA service (Phase 2), refactor to:
+    # 1. Define VLAService Protocol/ABC with generate_episode() interface
+    # 2. Remove default MockVLAService() instantiation
+    # 3. Require VLA service injection via __init__ (no default)
+    # 4. Update API router to inject concrete implementation
+    # This enables clean dependency injection and easier testing.
+
     def __init__(self, vla_service: MockVLAService | None = None):
         """
         Initialize turn service

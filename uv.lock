@@ -1326,6 +1326,7 @@ dev = [
 [package.dev-dependencies]
 dev = [
     { name = "aiosqlite" },
+    { name = "greenlet" },
     { name = "mongomock-motor" },
 ]
 
@@ -1356,6 +1357,7 @@ provides-extras = ["dev"]
 [package.metadata.requires-dev]
 dev = [
     { name = "aiosqlite", specifier = ">=0.21.0" },
+    { name = "greenlet", specifier = ">=3.2.4" },
     { name = "mongomock-motor", specifier = ">=0.0.36" },
 ]
 

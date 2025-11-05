@@ -39,6 +39,21 @@ filterwarnings = [
     "ignore::DeprecationWarning:lazy_model.*",
 ]
 
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/conftest.py"]
+concurrency = ["thread", "greenlet"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
@@ -69,5 +84,6 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "aiosqlite>=0.21.0",
+    "greenlet>=3.2.4",
     "mongomock-motor>=0.0.36",
 ]
