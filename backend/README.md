@@ -53,14 +53,11 @@ uv run pytest -s
 ### Code Quality
 
 ```bash
-# Linting
+# Linting (includes import sorting)
 uvx ruff check
 
 # Formatting
 uvx ruff format --check
-
-# Import sorting
-uvx isort --check --profile black .
 ```
 
 ## Project Structure

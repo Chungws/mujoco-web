@@ -48,14 +48,11 @@ uv run --with pytest --with pytest-asyncio pytest -s
 ### Code Quality
 
 ```bash
-# Linting
-uvx ruff check src tests
+# Linting (includes import sorting)
+uvx ruff check
 
 # Formatting
-uvx ruff format --check src tests
-
-# Import sorting
-uvx isort --check --profile black src tests
+uvx ruff format --check
 ```
 
 ## How It Works
