@@ -28,9 +28,7 @@ class Settings(BaseSettings):
     )
 
     # Database URLs
-    postgres_uri: str = (
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/vlaarena"
-    )
+    postgres_uri: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/vlaarena"
 
     # CORS settings (backend only)
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"

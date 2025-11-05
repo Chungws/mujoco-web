@@ -55,18 +55,14 @@ class Episode(Document):
     # Sequence tracking
     battle_seq_in_session: int = Field(index=True)
     turn_seq: int = Field(index=True)
-    seq_in_turn: int = Field(
-        index=True, description="0=left, 1=right"
-    )
+    seq_in_turn: int = Field(index=True, description="0=left, 1=right")
 
     # Model info
     side: str = Field(description="left or right")
     model_id: str = Field(index=True)
 
     # Execution data (variable length, up to EPISODE_MAX_STEPS)
-    actions: list[list[float]] = Field(
-        description="8-dim actions for each step"
-    )
+    actions: list[list[float]] = Field(description="8-dim actions for each step")
     states: list[State] = Field(
         description="MuJoCo states (qpos, qvel, time) for replay"
     )

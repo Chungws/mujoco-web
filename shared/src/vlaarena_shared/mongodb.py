@@ -63,7 +63,5 @@ def get_mongodb_client() -> AsyncIOMotorClient:
         RuntimeError: If MongoDB is not connected
     """
     if mongodb_client is None:
-        raise RuntimeError(
-            "MongoDB is not connected. Call connect_mongodb() first."
-        )
+        raise RuntimeError("MongoDB is not connected. Call connect_mongodb() first.")
     return mongodb_client
