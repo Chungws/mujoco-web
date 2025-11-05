@@ -5,7 +5,7 @@ Following TDD workflow: Red → Green → Refactor
 Episode API handles retrieving episode data from MongoDB for frontend replay.
 """
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
