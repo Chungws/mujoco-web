@@ -140,10 +140,10 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [ ] ModelStatsTotalRepository (PostgreSQL CRUD)
   - [x] Base repository pattern - Already implemented
 
-- [ ] **Core APIs**
+- [x] **Core APIs**
   - [x] POST /api/sessions/init (create session+battle, assign models) - TDD with 15 tests
   - [ ] GET /api/battles/{battle_id} (get battle details with turns)
-  - [ ] POST /api/battles/{battle_id}/turns (create new turn with episodes)
+  - [x] POST /api/battles/{battle_id}/turns (create new turn with episodes) - TDD with 7 tests
   - [ ] POST /api/votes (submit vote for turn)
   - [x] GET /api/models (list available models) - TDD with 3 tests
   - [ ] GET /api/leaderboard (robot-specific and global rankings)
@@ -349,12 +349,18 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ All SQLModel models (Session, Battle, Turn, Vote, ModelStats)
 - ✅ MongoDB Episode model with Beanie ODM
 - ✅ MongoDB connection with indexes
-- ✅ 13 passing tests for MongoDB
+- ✅ Session API (POST /api/sessions/init) - 15 tests
+- ✅ Models API (GET /api/models) - 3 tests
+- ✅ MockVLAService implementation - 9 tests
+- ✅ Turn API (POST /api/battles/{id}/turns) - 7 tests
+- ✅ TurnService with full episode generation flow
+- ✅ MongoDB episode storage with Beanie ODM
+- ✅ 35 passing backend tests (0 warnings)
 
 **Next Up:**
-- Repository layer implementation
-- Core API endpoints (POST /api/sessions/init, etc.)
-- VLA execution service (mock)
+- Episode API (GET /api/episodes/{id})
+- Vote API (POST /api/votes)
+- Leaderboard API (GET /api/leaderboard)
 
 ---
 
@@ -363,18 +369,18 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Milestone | Status | Progress | Target Date |
 |-----------|--------|----------|-------------|
 | Phase 0: Setup | ✅ Complete | 100% | 2025-01-04 |
-| Backend Foundation | 🔄 In Progress | 60% | Week 3 end |
+| Backend Foundation | 🔄 In Progress | 75% | Week 3 end |
 | VLA & MuJoCo | ⏸️ Not Started | 0% | Week 5 end |
 | Frontend & Worker | ⏸️ Not Started | 0% | Week 6 end |
 | Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 35% complete
+**Overall MVP Progress:** 45% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
 - Models & Schemas: 100% (SQLModel + Pydantic schemas with TDD)
-- Repository layer: 0%
-- Core APIs: 0%
+- Core APIs: 60% (Session ✅, Models ✅, Turns ✅, Episodes ⏸️, Votes ⏸️, Leaderboard ⏸️)
+- Services: 75% (SessionService ✅, MockVLAService ✅, TurnService ✅)
 
 ---
 
@@ -496,10 +502,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-01-04 | Variable episode length support | Claude |
 | 2025-11-05 | Database foundation complete (Steps 1-3) | Claude |
 | 2025-11-05 | API schemas complete with TDD (23 tests) | Claude |
+| 2025-11-06 | Turn API complete with TDD (7 tests, MongoDB integration) | Claude |
 
 ---
 
-**Last Updated:** 2025-11-05
-**Status:** MVP Week 2-3 - Backend Foundation (60% complete)
-**Next Milestone:** Repository Layer & Core APIs
+**Last Updated:** 2025-11-06
+**Status:** MVP Week 2-3 - Backend Foundation (75% complete)
+**Next Milestone:** Episode & Vote APIs
 **Target MVP Completion:** Week 7
