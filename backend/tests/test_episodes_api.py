@@ -5,8 +5,11 @@ Following TDD workflow: Red → Green → Refactor
 Episode API handles retrieving episode data from MongoDB for frontend replay.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
+from pymongo.errors import ConnectionFailure, OperationFailure
 
 from vlaarena_shared.mongodb_models import Episode, State
 
@@ -269,3 +272,61 @@ class TestEpisodeAPI:
         # Check actual steps (not max steps)
         assert len(result["actions"]) == 15
         assert len(result["states"]) == 15
+
+    @pytest.mark.asyncio
+    @patch("vlaarena_backend.repositories.episode_repository.Episode.find_one")
+    async def test_get_episode_database_connection_error(
+        self, mock_find_one, client: TestClient, mongodb
+    ):
+        """
+        Test episode retrieval fails when MongoDB connection fails
+
+        Scenario:
+        1. MongoDB connection is down
+        2. User requests episode by ID
+        3. Returns 503 Service Unavailable
+
+        AAA Pattern:
+        - Arrange: Mock MongoDB connection failure
+        - Act: GET /api/episodes/{episode_id}
+        - Assert: 503 status code with appropriate error message
+        """
+        # Arrange: Mock MongoDB connection failure
+        mock_find_one.side_effect = ConnectionFailure("Connection timeout")
+
+        # Act
+        response = client.get("/api/episodes/ep_test123")
+
+        # Assert
+        assert response.status_code == 503
+        detail = response.json()["detail"]
+        assert "unavailable" in detail.lower()
+
+    @pytest.mark.asyncio
+    @patch("vlaarena_backend.repositories.episode_repository.Episode.find_one")
+    async def test_get_episode_database_operation_error(
+        self, mock_find_one, client: TestClient, mongodb
+    ):
+        """
+        Test episode retrieval fails when MongoDB operation fails
+
+        Scenario:
+        1. MongoDB operation fails (e.g., permission denied)
+        2. User requests episode by ID
+        3. Returns 503 Service Unavailable
+
+        AAA Pattern:
+        - Arrange: Mock MongoDB operation failure
+        - Act: GET /api/episodes/{episode_id}
+        - Assert: 503 status code
+        """
+        # Arrange: Mock MongoDB operation failure
+        mock_find_one.side_effect = OperationFailure("Operation not permitted")
+
+        # Act
+        response = client.get("/api/episodes/ep_test123")
+
+        # Assert
+        assert response.status_code == 503
+        detail = response.json()["detail"]
+        assert "unavailable" in detail.lower()

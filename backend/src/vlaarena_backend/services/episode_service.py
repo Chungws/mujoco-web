@@ -2,11 +2,18 @@
 Episode service for business logic
 """
 
+import logging
 from typing import Optional
 
+from pydantic import ValidationError
+
+from vlaarena_backend.exceptions import EpisodeValidationError
 from vlaarena_backend.repositories.episode_repository import EpisodeRepository
 from vlaarena_shared.mongodb_models import Episode
 from vlaarena_shared.schemas import EpisodeResponse, EpisodeState
+
+
+logger = logging.getLogger(__name__)
 
 
 class EpisodeService:
@@ -30,6 +37,9 @@ class EpisodeService:
 
         Returns:
             Episode document or None if not found
+
+        Raises:
+            EpisodeDatabaseError: If MongoDB operation fails
         """
         return await self.repository.get_by_episode_id(episode_id)
 
@@ -43,6 +53,10 @@ class EpisodeService:
         Returns:
             EpisodeResponse or None if not found
 
+        Raises:
+            EpisodeDatabaseError: If MongoDB operation fails
+            EpisodeValidationError: If episode data is invalid
+
         Note:
             Converts MongoDB Episode document to Pydantic schema
             with only the fields needed for frontend replay (actions and states).
@@ -51,18 +65,25 @@ class EpisodeService:
         if not episode:
             return None
 
-        # Convert MongoDB State objects to Pydantic EpisodeState schemas
-        episode_states: list[EpisodeState] = [
-            EpisodeState(
-                qpos=state.qpos,
-                qvel=state.qvel,
-                time=state.time,
-            )
-            for state in episode.states
-        ]
+        try:
+            # Convert MongoDB State objects to Pydantic EpisodeState schemas
+            episode_states: list[EpisodeState] = [
+                EpisodeState(
+                    qpos=state.qpos,
+                    qvel=state.qvel,
+                    time=state.time,
+                )
+                for state in episode.states
+            ]
 
-        return EpisodeResponse(
-            episode_id=episode.episode_id,
-            actions=episode.actions,
-            states=episode_states,
-        )
+            return EpisodeResponse(
+                episode_id=episode.episode_id,
+                actions=episode.actions,
+                states=episode_states,
+            )
+        except ValidationError as e:
+            logger.error(f"Validation error while converting episode {episode_id} to response: {e}")
+            raise EpisodeValidationError(episode_id, e)
+        except Exception as e:
+            logger.error(f"Unexpected error while converting episode {episode_id} to response: {e}")
+            raise EpisodeValidationError(episode_id, e)

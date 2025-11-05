@@ -6,6 +6,11 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
+from vlaarena_backend.exceptions import (
+    EpisodeDatabaseError,
+    EpisodeRepositoryError,
+    EpisodeValidationError,
+)
 from vlaarena_backend.services.episode_service import EpisodeService
 from vlaarena_shared.schemas import EpisodeResponse
 
@@ -56,8 +61,29 @@ async def get_episode(episode_id: str):
         # Re-raise HTTPException as-is
         raise
 
+    except EpisodeValidationError as e:
+        logger.error(f"Validation error for episode {episode_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid episode data: {str(e)}",
+        )
+
+    except EpisodeDatabaseError as e:
+        logger.error(f"Database error while fetching episode {episode_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database service temporarily unavailable",
+        )
+
+    except EpisodeRepositoryError as e:
+        logger.error(f"Repository error for episode {episode_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get episode: {str(e)}",
+        )
+
     except Exception as e:
-        logger.error(f"Failed to get episode {episode_id}: {e}")
+        logger.error(f"Unexpected error while fetching episode {episode_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get episode: {str(e)}",
