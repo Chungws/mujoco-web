@@ -7,7 +7,6 @@ Following TDD workflow:
 3. Refactor: Improve code quality
 """
 
-
 from vlaarena_backend.services.vla_service import MockVLAService
 
 
