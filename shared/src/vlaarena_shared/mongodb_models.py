@@ -6,7 +6,7 @@ Based on ADR-002: Database Schema Design
 from datetime import UTC, datetime
 from typing import ClassVar
 
-from beanie import Document
+from beanie import Document, Indexed
 from pydantic import BaseModel, Field
 
 
@@ -47,19 +47,19 @@ class Episode(Document):
     """
 
     # Identifiers
-    episode_id: str = Field(unique=True, index=True)
-    session_id: str = Field(index=True)
-    battle_id: str = Field(index=True)
-    turn_id: str = Field(index=True)
+    episode_id: Indexed(str, unique=True)
+    session_id: Indexed(str)
+    battle_id: Indexed(str)
+    turn_id: Indexed(str)
 
     # Sequence tracking
-    battle_seq_in_session: int = Field(index=True)
-    turn_seq: int = Field(index=True)
-    seq_in_turn: int = Field(index=True, description="0=left, 1=right")
+    battle_seq_in_session: Indexed(int)
+    turn_seq: Indexed(int)
+    seq_in_turn: Indexed(int) = Field(description="0=left, 1=right")
 
     # Model info
     side: str = Field(description="left or right")
-    model_id: str = Field(index=True)
+    model_id: Indexed(str)
 
     # Execution data (variable length, up to EPISODE_MAX_STEPS)
     actions: list[list[float]] = Field(description="8-dim actions for each step")
