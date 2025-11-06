@@ -182,28 +182,35 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 
 #### Week 3: VLA Server Infrastructure
 
-- [ ] **Project Setup**
-  - [ ] Create vla-server/ directory structure
-  - [ ] Setup pyproject.toml (mujoco, torch, transformers dependencies)
-  - [ ] FastAPI app skeleton
-  - [ ] Configuration management (Pydantic Settings)
-  - [ ] Download Franka Panda model from MuJoCo Menagerie
+- [x] **Project Setup**
+  - [x] Create vla-server/ directory structure
+  - [x] Setup pyproject.toml (mujoco, torch, transformers dependencies) - with uv
+  - [x] Configuration management (Pydantic Settings)
+  - [x] Root config setup (config/mujoco/ XML templates)
+  - [ ] FastAPI app skeleton (next PR)
+  - [ ] Download Franka Panda model from MuJoCo Menagerie (using simplified model)
 
-- [ ] **MuJoCo Environment (TDD - 15 tests)**
-  - [ ] services/mujoco_env.py
-  - [ ] Load Franka Emika Panda robot (MuJoCo Menagerie)
-  - [ ] Load table scene
-  - [ ] Environment reset to initial state
-  - [ ] Step simulation with action
-  - [ ] Get observation (camera rendering + proprioception)
-  - [ ] Get state for recording (qpos, qvel, time)
-  - [ ] Error handling (invalid robot/scene)
+- [x] **XML Composition (TDD - 10 tests)**
+  - [x] config/model_loader.py
+  - [x] Dynamic robot + scene composition
+  - [x] Template, robot, scene XML files
+  - [x] Error handling (missing files)
 
-- [ ] **VLA Model Manager (TDD - 12 tests)**
-  - [ ] services/vla_model.py
-  - [ ] Load Octo-Small (27M) from HuggingFace
-  - [ ] Load SmolVLA (450M) from HuggingFace
-  - [ ] Model inference (observation + instruction → action)
+- [x] **MuJoCo Environment (TDD - 16 tests)**
+  - [x] services/mujoco_env.py
+  - [x] Load Franka Emika Panda robot (simplified 7-DOF + gripper)
+  - [x] Load table scene
+  - [x] Environment reset to initial state
+  - [x] Step simulation with action
+  - [x] Get observation (camera rendering + proprioception)
+  - [x] Get state for recording (qpos, qvel, time)
+  - [x] Error handling (invalid robot/scene)
+
+- [ ] **VLA Adapter Pattern (TDD - 20 tests)** (next PR)
+  - [ ] adapters/base.py - Abstract adapter interface
+  - [ ] adapters/openvla_adapter.py - OpenVLA 7B adapter
+  - [ ] adapters/octo_adapter.py - Octo-Base adapter
+  - [ ] Model-specific preprocessing/postprocessing
   - [ ] Device management (auto, cuda, cpu, mps)
   - [ ] Model caching (lazy loading)
   - [ ] MacBook compatibility (CPU/MPS mode)
@@ -405,7 +412,9 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ **Total: 128 passing tests (88 backend + 40 worker)**
 
 **Next Up:**
-- VLA Server Development (Week 3-5) - In separate worktree (25% complete)
+- VLA Server Development (Week 3-5) - In Progress (35% complete)
+  - ✅ Phase 1: Config + MuJoCo Environment (26 tests passing)
+  - ⏭️ Phase 2: VLA Adapters (next PR)
 
 ---
 
@@ -417,10 +426,10 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Backend Foundation | ✅ Complete | 100% | 2025-01-06 |
 | Worker & Leaderboard | ✅ Complete | 100% | 2025-01-06 |
 | Frontend | ✅ Complete | 100% | 2025-11-07 |
-| VLA Server Development | 🔄 In Progress | 25% | Week 5 end |
+| VLA Server Development | 🔄 In Progress | 35% | Week 5 end |
 | Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 80% complete
+**Overall MVP Progress:** 82% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
@@ -429,7 +438,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - Services: 100% (SessionService ✅, MockVLAService ✅, TurnService ✅, VoteService ✅)
 - Worker & Leaderboard: 100% (ELO aggregation ✅, robot-specific + global ELO ✅, 40 tests ✅)
 - Frontend: 100% (Battle Page ✅, Leaderboard Page ✅, Home Page ✅)
-- VLA Server: 25% (Architecture designed, MuJoCo environment implemented, 19 tests)
+- VLA Server: 35% (Config + MuJoCo Environment ✅, 26 tests ✅, Adapters next)
 
 ---
 
@@ -563,10 +572,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-11-07 | Updated Frontend completion (Battle + Leaderboard pages done) | Claude |
 | 2025-11-07 | Updated progress tracking (80% MVP complete) | Claude |
 | 2025-11-07 | Removed obsolete BACKEND_STATUS.md and FRONTEND_STATUS.md | Claude |
+| 2025-01-07 | VLA Server Phase 1: Config + MuJoCo Environment (26 tests) | Claude |
 
 ---
 
-**Last Updated:** 2025-11-07
-**Status:** MVP 80% Complete - VLA Server In Progress
-**Next Milestone:** VLA Server Development (25% → 100%)
+**Last Updated:** 2025-01-07
+**Status:** MVP 82% Complete - VLA Server In Progress
+**Next Milestone:** VLA Server Adapters (Phase 2)
 **Target MVP Completion:** Week 7
