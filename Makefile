@@ -100,13 +100,13 @@ clean:
 		echo "❌ Cancelled"; \
 	fi
 
-# Run tests
+# Run tests (always from root to use workspace dev dependencies)
 test:
 	@echo "🧪 Running backend tests..."
-	@cd backend && uv run pytest -s
+	@uv run --directory backend pytest -s
 	@echo ""
 	@echo "🧪 Running worker tests..."
-	@cd worker && uv run pytest -s
+	@uv run --directory worker pytest -s
 	@echo ""
 	@echo "✅ All tests completed"
 
