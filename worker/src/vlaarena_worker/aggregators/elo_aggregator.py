@@ -21,7 +21,7 @@ from typing import Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from vlaarena_shared.models import ModelStats, Vote
+from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal, Vote
 
 from .elo_calculator import (
     INITIAL_ELO,
@@ -106,7 +106,7 @@ class ELOAggregator:
 
     async def _process_single_vote(self, vote: Vote) -> None:
         """
-        Process a single vote and update model statistics
+        Process a single vote and update model statistics (robot-specific + global)
 
         Args:
             vote: Vote object to process
@@ -115,14 +115,59 @@ class ELOAggregator:
             ValueError: If vote type is invalid
             Exception: If database operation fails
         """
-        # Get or create model stats for both models
-        left_stats = await self._get_or_create_model_stats(vote.left_model_id)
-        right_stats = await self._get_or_create_model_stats(vote.right_model_id)
+        # Get or create robot-specific model stats for both models
+        left_stats_robot = await self._get_or_create_model_stats_by_robot(
+            vote.left_model_id, vote.robot_id
+        )
+        right_stats_robot = await self._get_or_create_model_stats_by_robot(
+            vote.right_model_id, vote.robot_id
+        )
+
+        # Get or create global model stats for both models
+        left_stats_total = await self._get_or_create_model_stats_total(vote.left_model_id)
+        right_stats_total = await self._get_or_create_model_stats_total(vote.right_model_id)
 
         # Get scores for each model (raises ValueError if invalid vote type)
         left_score = get_score_from_vote(vote.vote, is_left=True)
         right_score = get_score_from_vote(vote.vote, is_left=False)
 
+        # Update robot-specific stats
+        await self._update_model_stats(
+            left_stats_robot, right_stats_robot, left_score, right_score
+        )
+
+        # Update global stats
+        await self._update_model_stats(
+            left_stats_total, right_stats_total, left_score, right_score
+        )
+
+        # Mark vote as processed
+        vote.processing_status = "processed"
+        vote.processed_at = datetime.now(UTC)
+
+        # Add to session (will be committed by caller)
+        self.session.add(left_stats_robot)
+        self.session.add(right_stats_robot)
+        self.session.add(left_stats_total)
+        self.session.add(right_stats_total)
+        self.session.add(vote)
+
+    async def _update_model_stats(
+        self,
+        left_stats: ModelStatsByRobot | ModelStatsTotal,
+        right_stats: ModelStatsByRobot | ModelStatsTotal,
+        left_score: float,
+        right_score: float,
+    ) -> None:
+        """
+        Update ELO ratings and statistics for two models
+
+        Args:
+            left_stats: Stats for left model (robot-specific or global)
+            right_stats: Stats for right model (robot-specific or global)
+            left_score: Score for left model (0.0 to 1.0)
+            right_score: Score for right model (0.0 to 1.0)
+        """
         # Calculate new ELO ratings
         new_left_elo = calculate_elo(
             left_stats.elo_score,
@@ -170,31 +215,68 @@ class ELOAggregator:
         left_stats.updated_at = datetime.now(UTC)
         right_stats.updated_at = datetime.now(UTC)
 
-        # Mark vote as processed
-        vote.processing_status = "processed"
-        vote.processed_at = datetime.now(UTC)
-
-        # Add to session (will be committed by caller)
-        self.session.add(left_stats)
-        self.session.add(right_stats)
-        self.session.add(vote)
-
-    async def _get_or_create_model_stats(self, model_id: str) -> ModelStats:
+    async def _get_or_create_model_stats_by_robot(
+        self, model_id: str, robot_id: str
+    ) -> ModelStatsByRobot:
         """
-        Get existing ModelStats or create new one with default values
+        Get existing robot-specific ModelStats or create new one with default values
 
         Args:
             model_id: Model identifier
+            robot_id: Robot identifier
 
         Returns:
-            ModelStats: Existing or newly created model statistics
+            ModelStatsByRobot: Existing or newly created robot-specific model statistics
 
         Raises:
             Exception: If database operation fails
         """
         # Try to get existing stats
         result = await self.session.execute(
-            select(ModelStats).where(ModelStats.model_id == model_id)
+            select(ModelStatsByRobot).where(
+                ModelStatsByRobot.model_id == model_id,
+                ModelStatsByRobot.robot_id == robot_id,
+            )
+        )
+        stats = result.scalar_one_or_none()
+
+        if stats is not None:
+            return stats
+
+        # Create new robot-specific stats with default values
+        logger.info(f"Creating new ModelStatsByRobot for model: {model_id}, robot: {robot_id}")
+        stats = ModelStatsByRobot(
+            model_id=model_id,
+            robot_id=robot_id,
+            elo_score=INITIAL_ELO,
+            elo_ci=200.0,
+            vote_count=0,
+            win_count=0,
+            loss_count=0,
+            tie_count=0,
+            win_rate=0.0,
+        )
+        self.session.add(stats)
+        await self.session.flush()  # Flush to get ID assigned
+
+        return stats
+
+    async def _get_or_create_model_stats_total(self, model_id: str) -> ModelStatsTotal:
+        """
+        Get existing global ModelStats or create new one with default values
+
+        Args:
+            model_id: Model identifier
+
+        Returns:
+            ModelStatsTotal: Existing or newly created global model statistics
+
+        Raises:
+            Exception: If database operation fails
+        """
+        # Try to get existing stats
+        result = await self.session.execute(
+            select(ModelStatsTotal).where(ModelStatsTotal.model_id == model_id)
         )
         stats = result.scalar_one_or_none()
 
@@ -206,12 +288,12 @@ class ELOAggregator:
         organization = model_info.get("organization", "Unknown")
         license_type = model_info.get("license", "Unknown")
 
-        # Create new stats with default values
+        # Create new global stats with default values
         logger.info(
-            f"Creating new ModelStats for model: {model_id} "
+            f"Creating new ModelStatsTotal for model: {model_id} "
             f"(org: {organization}, license: {license_type})"
         )
-        stats = ModelStats(
+        stats = ModelStatsTotal(
             model_id=model_id,
             elo_score=INITIAL_ELO,
             elo_ci=200.0,
