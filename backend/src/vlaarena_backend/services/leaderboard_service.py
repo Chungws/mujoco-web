@@ -8,7 +8,7 @@ from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from vlaarena_shared.models import ModelStats, WorkerStatus
+from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal, WorkerStatus
 from vlaarena_shared.schemas import (
     LeaderboardMetadata,
     LeaderboardResponse,
@@ -25,21 +25,24 @@ class LeaderboardService:
         self.db = db
         self.model_stats_repo = ModelStatsRepository(db)
 
-    async def get_leaderboard(self, min_vote_count: int = 5) -> LeaderboardResponse:
+    async def get_leaderboard(
+        self, min_vote_count: int = 5, robot_id: str | None = None
+    ) -> LeaderboardResponse:
         """
         Get leaderboard with model rankings
 
         Args:
             min_vote_count: Minimum number of votes required to appear on leaderboard
+            robot_id: If provided, get robot-specific leaderboard. Otherwise, get global.
 
         Returns:
             LeaderboardResponse with ranked models sorted by ELO score descending
         """
         # Get models from repository (sorted by elo_score desc)
-        models = await self.model_stats_repo.get_leaderboard(min_vote_count)
+        models = await self.model_stats_repo.get_leaderboard(min_vote_count, robot_id)
 
         # Get total votes
-        total_votes = await self.model_stats_repo.get_total_votes(min_vote_count)
+        total_votes = await self.model_stats_repo.get_total_votes(min_vote_count, robot_id)
 
         # Get last update time from worker_status table
         # This shows when worker last ran, even if no votes were processed
@@ -66,19 +69,23 @@ class LeaderboardService:
 
     def _build_leaderboard_entries(
         self,
-        models: List[ModelStats],
+        models: List[ModelStatsByRobot | ModelStatsTotal],
     ) -> List[ModelStatsResponse]:
         """
         Build leaderboard entries with ranks
 
         Args:
-            models: List of ModelStats sorted by elo_score descending
+            models: List of ModelStatsByRobot or ModelStatsTotal sorted by elo_score descending
 
         Returns:
             List of ModelStatsResponse with ranks assigned (1 = highest ELO)
         """
         entries = []
         for rank, model in enumerate(models, start=1):
+            # ModelStatsTotal has organization and license, ModelStatsByRobot doesn't
+            organization = getattr(model, "organization", "Unknown")
+            license_type = getattr(model, "license", "Unknown")
+
             entry = ModelStatsResponse(
                 rank=rank,
                 model_id=model.model_id,
@@ -87,8 +94,8 @@ class LeaderboardService:
                 elo_ci=model.elo_ci,
                 vote_count=model.vote_count,
                 win_rate=model.win_rate,
-                organization=model.organization,
-                license=model.license,
+                organization=organization,
+                license=license_type,
             )
             entries.append(entry)
 
