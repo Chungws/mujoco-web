@@ -22,6 +22,11 @@ Backend (Orchestrator) → HTTP → VLA Server (Execution)
 # Install dependencies
 uv sync --all-extras
 
+# Download Franka robot model from MuJoCo Menagerie
+git clone --depth 1 https://github.com/google-deepmind/mujoco_menagerie.git /tmp/mujoco_menagerie
+mkdir -p models/robots/franka models/scenes/table
+cp -r /tmp/mujoco_menagerie/franka_emika_panda/* models/robots/franka/
+
 # Run server
 uv run uvicorn vla_server.main:app --reload --port 8001
 
