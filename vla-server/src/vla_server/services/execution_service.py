@@ -49,7 +49,9 @@ class ExecutionService:
         actions = []
         states = []
 
-        max_steps = settings.max_episode_steps
+        # Calculate max steps based on duration and control frequency
+        # Example: 15s × 5Hz = 75 steps (more realistic than fixed 50)
+        max_steps = int(settings.max_episode_seconds * settings.control_frequency)
 
         for step in range(max_steps):
             # Get observation
@@ -65,9 +67,9 @@ class ExecutionService:
             actions.append(action)
             states.append(State(**env.get_state()))
 
-            # TODO: Check termination (implement goal checking)
-            # For MVP, we run for max_steps
-            # if self._is_goal_reached(env, request):
+            # TODO: Check termination signal from VLA model
+            # Most VLA models use last dimension as terminate signal
+            # if len(action) >= 8 and action[7] > 0.5:
             #     break
 
         # 5. Calculate duration
