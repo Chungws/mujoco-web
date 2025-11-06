@@ -22,7 +22,12 @@ dev = [
 ]
 
 [tool.uv.workspace]
-members = ["backend", "worker", "shared"]
+members = [
+    "backend",
+ "worker",
+ "shared",
+ "vla-server",
+]
 
 [tool.uv.sources]
 vlaarena-shared = { workspace = true }
