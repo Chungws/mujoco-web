@@ -844,10 +844,10 @@ async def execute_vla(request: ExecuteRequest):
 
 ### Week 3: Core Infrastructure
 - [x] Project setup (directory, dependencies)
-- [ ] MuJoCo environment (15 tests, TDD)
-- [ ] VLA model manager (12 tests, TDD)
-- [ ] Execution service (20 tests, TDD)
-- [ ] Download Franka model from Menagerie
+- [x] MuJoCo environment (17 tests, TDD) ✅
+- [x] VLA model manager (12 tests, TDD) ✅
+- [x] Execution service (13 tests, TDD) ✅
+- [x] Download Franka model from Menagerie ✅
 
 ### Week 4: Integration & Testing
 - [ ] API endpoints (10 tests)
