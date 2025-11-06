@@ -6,7 +6,7 @@
 
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import BattleClient from "./battle-client";
+import BattleClient from "@/components/battle/battle-arena-client";
 
 export default async function BattlePage() {
   return (
