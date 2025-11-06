@@ -20,21 +20,22 @@ router = APIRouter()
 
 @router.get("/leaderboard", response_model=LeaderboardResponse, status_code=status.HTTP_200_OK)
 async def get_leaderboard(
+    robot_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Get leaderboard with ELO-based rankings
+    Get leaderboard with ELO-based rankings (robot-specific or global)
 
     Flow:
-    1. Query model_stats table from PostgreSQL
+    1. Query model_stats_by_robot (if robot_id) or model_stats_total (if None) from PostgreSQL
     2. Filter models with vote_count >= 5 (minimum threshold)
     3. Sort by elo_score descending (fixed rank: 1 = highest ELO)
     4. Assign ranks (1, 2, 3, ...)
     5. Calculate metadata (total models, total votes, last updated)
 
-    Note: Sorting/filtering is handled client-side for better performance
-
     Args:
+        robot_id: Optional robot ID for robot-specific leaderboard.
+                  If None, returns global leaderboard.
         db: Database session
 
     Returns:
@@ -46,7 +47,7 @@ async def get_leaderboard(
     try:
         service = LeaderboardService(db)
         leaderboard = await service.get_leaderboard(
-            min_vote_count=settings.min_votes_for_leaderboard
+            min_vote_count=settings.min_votes_for_leaderboard, robot_id=robot_id
         )
         return leaderboard
 

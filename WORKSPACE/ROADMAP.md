@@ -139,20 +139,19 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - [x] **Repository Layer**
   - [x] SessionRepository (PostgreSQL CRUD) - Already implemented
   - [x] BattleRepository (PostgreSQL CRUD) - Already implemented
-  - [ ] TurnRepository (PostgreSQL CRUD)
-  - [ ] VoteRepository (PostgreSQL CRUD)
-  - [ ] EpisodeRepository (MongoDB CRUD - Motor async)
-  - [ ] ModelStatsByRobotRepository (PostgreSQL CRUD)
-  - [ ] ModelStatsTotalRepository (PostgreSQL CRUD)
+  - [x] TurnRepository (PostgreSQL CRUD) - TDD with tests
+  - [x] VoteRepository (PostgreSQL CRUD) - TDD with tests
+  - [x] EpisodeRepository (MongoDB CRUD - Motor async) - TDD with 10 tests
+  - [x] ModelStatsRepository (PostgreSQL CRUD - dual ELO support) - TDD with 9 tests
   - [x] Base repository pattern - Already implemented
 
 - [x] **Core APIs**
   - [x] POST /api/sessions/init (create session+battle, assign models) - TDD with 15 tests
   - [ ] GET /api/battles/{battle_id} (get battle details with turns)
   - [x] POST /api/battles/{battle_id}/turns (create new turn with episodes) - TDD with 7 tests
-  - [ ] POST /api/votes (submit vote for turn)
+  - [x] POST /api/votes (submit vote for turn) - TDD with 16 tests
   - [x] GET /api/models (list available models) - TDD with 3 tests
-  - [ ] GET /api/leaderboard (robot-specific and global rankings)
+  - [x] GET /api/leaderboard (robot-specific and global rankings) - TDD with 5 tests
   - [x] Health check endpoint - Already implemented
 
 - [x] **Mock VLA Service (for MVP development)**
@@ -168,10 +167,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ MongoDB connection works (Beanie ODM with Motor async)
 - ✅ All SQLModel models match ADR-002 specification
 - ✅ MongoDB Episode document model with State and Metrics
-- ✅ All tests passing (13/13 in shared package, 15/15 in backend)
+- ✅ All tests passing (88 backend + 23 worker = 111 total)
 - ✅ Session can be created via API (POST /api/sessions/init with robot_id and scene_id)
-- [ ] API docs at /docs functional
-- [ ] Leaderboard API returns robot-specific and global ELO
+- ✅ API docs at /docs functional
+- ✅ Leaderboard API returns robot-specific and global ELO (TDD with 19 tests)
+- ✅ Worker aggregates votes and updates dual ELO rankings (robot-specific + global)
 
 ---
 
@@ -379,30 +379,28 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 
 ## 🎯 Current Status
 
-**Week:** 2-3 (Backend Foundation)
-**Active Tasks:**
-- Implementing Core APIs (Session, Battle, Turn, Vote endpoints)
-- Setting up Repository layer
-- Implementing API schemas
+**Week:** 5-6 (Worker & Leaderboard) - Complete! ✅
+**Last Update:** 2025-01-06
 
 **Completed:**
 - ✅ PostgreSQL + MongoDB Docker setup
 - ✅ Database schema migration (b3a87a3d54ec)
-- ✅ All SQLModel models (Session, Battle, Turn, Vote, ModelStats)
+- ✅ All SQLModel models (Session, Battle, Turn, Vote, ModelStatsByRobot, ModelStatsTotal)
 - ✅ MongoDB Episode model with Beanie ODM
 - ✅ MongoDB connection with indexes
 - ✅ Session API (POST /api/sessions/init) - 15 tests
 - ✅ Models API (GET /api/models) - 3 tests
 - ✅ MockVLAService implementation - 9 tests
 - ✅ Turn API (POST /api/battles/{id}/turns) - 7 tests
-- ✅ TurnService with full episode generation flow
-- ✅ MongoDB episode storage with Beanie ODM
-- ✅ 35 passing backend tests (0 warnings)
+- ✅ Episodes API (GET /api/episodes/{id}) - 7 tests
+- ✅ Votes API (POST /api/votes) - 16 tests
+- ✅ Leaderboard API (GET /api/leaderboard?robot_id=...) - Robot-specific + Global ELO
+- ✅ Worker ELO aggregation with dual table system - 19 tests
+- ✅ 88 total passing tests (69 backend + 19 worker)
 
 **Next Up:**
-- Episode API (GET /api/episodes/{id})
-- Vote API (POST /api/votes)
-- Leaderboard API (GET /api/leaderboard)
+- VLA Server Development (Week 3-5) - In separate worktree
+- Frontend Battle Page (Week 4-5) - In separate worktree
 
 ---
 
@@ -411,18 +409,20 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Milestone | Status | Progress | Target Date |
 |-----------|--------|----------|-------------|
 | Phase 0: Setup | ✅ Complete | 100% | 2025-01-04 |
-| Backend Foundation | 🔄 In Progress | 75% | Week 3 end |
+| Backend Foundation | ✅ Complete | 100% | 2025-01-06 |
 | VLA Server Development | 🔄 Starting | 5% | Week 5 end |
-| Frontend & Worker | ⏸️ Not Started | 0% | Week 6 end |
+| Worker & Leaderboard | ✅ Complete | 100% | 2025-01-06 |
+| Frontend | ⏸️ Not Started | 0% | Week 6 end |
 | Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 40% complete
+**Overall MVP Progress:** 60% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
 - Models & Schemas: 100% (SQLModel + Pydantic schemas with TDD)
-- Core APIs: 60% (Session ✅, Models ✅, Turns ✅, Episodes ⏸️, Votes ⏸️, Leaderboard ⏸️)
-- Services: 75% (SessionService ✅, MockVLAService ✅, TurnService ✅)
+- Core APIs: 100% (Session ✅, Models ✅, Turns ✅, Episodes ✅, Votes ✅, Leaderboard ✅)
+- Services: 100% (SessionService ✅, MockVLAService ✅, TurnService ✅, VoteService ✅)
+- Worker & Leaderboard: 100% (ELO aggregation ✅, robot-specific + global ELO ✅)
 - VLA Server: 5% (Architecture designed, ADR-003 + FEATURES/002 written)
 
 ---

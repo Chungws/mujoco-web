@@ -7,10 +7,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from vlaarena_backend.api import battles, episodes, models, sessions, votes
+from vlaarena_backend.api import battles, episodes, leaderboard, models, sessions, votes
 
-# Temporary: Comment out leaderboard while implementing VLA Arena MVP
-# from vlaarena_backend.api import leaderboard
 # Temporary: Comment out LLM client (not needed for VLA Arena MVP session init)
 # from vlaarena_backend.services.llm_client import (
 #     MockLLMClient,
@@ -85,5 +83,4 @@ app.include_router(models.router, prefix="/api", tags=["models"])
 app.include_router(battles.router, prefix="/api", tags=["battles"])
 app.include_router(episodes.router, prefix="/api", tags=["episodes"])
 app.include_router(votes.router, prefix="/api", tags=["votes"])
-# Temporary: Comment out while implementing VLA Arena MVP
-# app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
+app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])

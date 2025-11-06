@@ -2,7 +2,6 @@
 Pytest configuration and fixtures for backend tests
 """
 
-import asyncio
 import os
 
 
@@ -12,7 +11,6 @@ os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"
 os.environ["USE_MOCK_LLM"] = "true"
 os.environ["MODELS_CONFIG_PATH"] = "config/models.yaml"  # Relative to backend dir
 
-import pytest
 import pytest_asyncio
 from beanie import init_beanie
 from fastapi.testclient import TestClient
@@ -56,12 +54,8 @@ test_async_session_maker = sessionmaker(
 )
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create event loop for async tests"""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# Event loop fixture removed - pytest-asyncio provides this automatically
+# Using default asyncio_mode = "auto" from pytest-asyncio
 
 
 @pytest_asyncio.fixture(scope="function")
