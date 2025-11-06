@@ -20,14 +20,14 @@ from vlaarena_worker.main import (
 )
 
 
-@pytest.mark.asyncio
 class TestLoadModelConfigs:
     """Test load_model_configs() error handling"""
 
     def test_load_config_file_not_found(self, monkeypatch):
         """Test graceful handling when config file doesn't exist"""
-        # Arrange
-        monkeypatch.setenv("MODELS_CONFIG_PATH", "/nonexistent/path/models.yaml")
+        # Arrange - Monkeypatch settings.models_config_path directly
+        from vlaarena_shared.config import settings
+        monkeypatch.setattr(settings, "models_config_path", "/nonexistent/path/models.yaml")
 
         # Act
         result = load_model_configs()
@@ -35,11 +35,15 @@ class TestLoadModelConfigs:
         # Assert
         assert result == {}  # Should return empty dict, not crash
 
-    def test_load_config_invalid_yaml(self, tmp_path):
+    def test_load_config_invalid_yaml(self, tmp_path, monkeypatch):
         """Test handling of malformed YAML file"""
         # Arrange - Create invalid YAML file
         config_file = tmp_path / "invalid.yaml"
         config_file.write_text("invalid: yaml: content: {{")
+
+        # Monkeypatch settings to use temp file
+        from vlaarena_shared.config import settings
+        monkeypatch.setattr(settings, "models_config_path", str(config_file))
 
         # Act
         result = load_model_configs()
@@ -52,7 +56,10 @@ class TestLoadModelConfigs:
         # Arrange - Create valid YAML without 'models' key
         config_file = tmp_path / "config.yaml"
         config_file.write_text("other_key: value\n")
-        monkeypatch.setenv("MODELS_CONFIG_PATH", str(config_file))
+
+        # Monkeypatch settings to use temp file
+        from vlaarena_shared.config import settings
+        monkeypatch.setattr(settings, "models_config_path", str(config_file))
 
         # Act
         result = load_model_configs()
@@ -68,10 +75,13 @@ class TestRunAggregationErrors:
     async def test_db_connection_failure_handled(self, monkeypatch):
         """Test graceful handling of database connection failure"""
         # Arrange - Mock database to raise connection error
-        mock_session_maker = AsyncMock()
-        mock_session = MagicMock()
+        mock_session = AsyncMock()
         mock_session.__aenter__.side_effect = Exception("Database connection failed")
-        mock_session_maker.return_value = mock_session
+        mock_session.__aexit__.return_value = None
+
+        # Mock the session maker to return our mock session
+        def mock_session_maker():
+            return mock_session
 
         monkeypatch.setattr("vlaarena_worker.main.async_session_maker", mock_session_maker)
 

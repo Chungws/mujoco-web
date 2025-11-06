@@ -46,17 +46,3 @@ class TestDatabaseConnection:
             break
 
         assert session_created is True
-
-    @pytest.mark.skip(reason="Requires actual PostgreSQL server - integration test")
-    @pytest.mark.asyncio
-    async def test_database_query_execution(self):
-        """Test actual database query execution - integration test"""
-        # NOTE: This test requires actual PostgreSQL server running
-        # Move to integration tests with proper test database setup
-        async for session in get_db():
-            # Example query: SELECT 1
-            from sqlalchemy import text
-
-            result = await session.execute(text("SELECT 1"))
-            assert result.scalar() == 1
-            break
