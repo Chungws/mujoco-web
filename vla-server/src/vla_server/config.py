@@ -3,13 +3,18 @@ Configuration for VLA Server
 Uses Pydantic Settings for environment variable management
 """
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Root .env file location (mujoco-web-vla/.env)
+ROOT_ENV_FILE = Path(__file__).parent.parent.parent.parent.parent / ".env"
 
 
 class Settings(BaseSettings):
     """VLA Server settings"""
 
-    model_config = SettingsConfigDict(env_prefix="VLA_", env_file=".env")
+    model_config = SettingsConfigDict(env_prefix="VLA_", env_file=str(ROOT_ENV_FILE))
 
     # Server
     host: str = "0.0.0.0"
