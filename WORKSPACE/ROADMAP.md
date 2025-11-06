@@ -66,6 +66,12 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - Interactive step-by-step debugging
 - Fair comparison
 
+#### 4. VLA Server Separation ✅
+- **Decision (2025-01-06):** VLA execution as separate microservice
+- **Reason:** Resource isolation (GPU vs CPU), independent scaling
+- **Architecture:** Backend (Orchestrator) → HTTP → VLA Server (Execution)
+- **See:** [ADR-003: VLA Server Separation](./ARCHITECTURE/ADR_003-VLA_Server_Separation.md)
+
 ### Deliverables
 - [x] WORKSPACE/00_PROJECT.md (VLA Arena overview)
 - [x] WORKSPACE/ROADMAP.md (this file)
@@ -84,9 +90,9 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 ### MVP Scope
 
 **Included:**
-- ✅ 1 robot (WidowX)
+- ✅ 1 robot (Franka Emika Panda from MuJoCo Menagerie)
 - ✅ 1 scene (Table simple manipulation)
-- ✅ 2 VLA models (OpenVLA 7B, Octo-base)
+- ✅ 2 VLA models (Octo-Small 27M, SmolVLA 450M)
 - ✅ Session creation with random model assignment
 - ✅ Multi-turn battles (multiple instructions per session)
 - ✅ Episode generation (up to 50 steps server-side, variable length)
@@ -169,54 +175,90 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 
 ---
 
-### Week 4-5: VLA & MuJoCo Integration
+### Week 3-5: VLA Server Development
 
-**Goal:** Episode generation working end-to-end
+**Goal:** Separate VLA execution service operational
+**See:** [FEATURES/002_VLA_Server.md](./FEATURES/002_VLA_Server.md) for complete specification
 
-#### Tasks
-- [ ] **MuJoCo Service**
-  - [ ] Install dm_control or mujoco-py
-  - [ ] Environment creation (robot + scene XML)
-  - [ ] State encode/decode (base64 serialization)
-  - [ ] Observation extraction (camera rendering)
-  - [ ] Step execution (action → next state)
+#### Week 3: VLA Server Infrastructure
 
-- [ ] **VLA Service**
-  - [ ] Model registry (config-based)
-  - [ ] OpenVLA 7B integration
-    - [ ] Reuse our FastAPI server code (from benchmark)
-    - [ ] Or use transformers directly
-  - [ ] Octo model integration
-  - [ ] Inference latency simulation (200ms for OpenVLA, 50ms for Octo)
+- [ ] **Project Setup**
+  - [ ] Create vla-server/ directory structure
+  - [ ] Setup pyproject.toml (mujoco, torch, transformers dependencies)
+  - [ ] FastAPI app skeleton
+  - [ ] Configuration management (Pydantic Settings)
+  - [ ] Download Franka Panda model from MuJoCo Menagerie
 
-- [ ] **Episode Service**
-  - [ ] POST /api/battles/{battle_id}/turns endpoint (embedded in turn creation)
-  - [ ] Stateless episode generation:
-    1. Load robot XML + scene configuration
-    2. Initialize MuJoCo environments (parallel for A/B)
-    3. Run up to max_steps (default 50, variable length)
-    4. For each step:
-       - Extract observation (camera rendering)
-       - Call VLA model for action
-       - Apply action to environment
-       - Record state (qpos, qvel, time)
-       - Check termination conditions
-    5. Save episode to MongoDB:
-       - actions[] (all actions taken)
-       - states[] (qpos, qvel for replay)
-       - metrics (success, total_steps, max_steps, terminated_early, etc.)
-    6. Return episode_ids to Turn
-  - [ ] Error handling (timeouts, failures, early termination)
-  - [ ] Variable episode length support (terminated_early flag)
+- [ ] **MuJoCo Environment (TDD - 15 tests)**
+  - [ ] services/mujoco_env.py
+  - [ ] Load Franka Emika Panda robot (MuJoCo Menagerie)
+  - [ ] Load table scene
+  - [ ] Environment reset to initial state
+  - [ ] Step simulation with action
+  - [ ] Get observation (camera rendering + proprioception)
+  - [ ] Get state for recording (qpos, qvel, time)
+  - [ ] Error handling (invalid robot/scene)
+
+- [ ] **VLA Model Manager (TDD - 12 tests)**
+  - [ ] services/vla_model.py
+  - [ ] Load Octo-Small (27M) from HuggingFace
+  - [ ] Load SmolVLA (450M) from HuggingFace
+  - [ ] Model inference (observation + instruction → action)
+  - [ ] Device management (auto, cuda, cpu, mps)
+  - [ ] Model caching (lazy loading)
+  - [ ] MacBook compatibility (CPU/MPS mode)
+
+#### Week 4: VLA Server Core Logic
+
+- [ ] **Execution Service (TDD - 20 tests)**
+  - [ ] services/execution_service.py
+  - [ ] Orchestrate MuJoCo + VLA model
+  - [ ] Episode loop (max 50 steps):
+    1. Get observation from MuJoCo
+    2. VLA model inference
+    3. Step MuJoCo simulation
+    4. Record action and state
+    5. Check termination
+  - [ ] Return episode data (actions, states, duration_ms)
+  - [ ] Error handling and timeouts
+
+- [ ] **API Endpoints (TDD - 10 tests)**
+  - [ ] api/execute.py - POST /execute
+  - [ ] api/health.py - GET /health
+  - [ ] api/models.py - GET /models (list available)
+  - [ ] Request/Response schemas
+  - [ ] Error handling (404, 400, 500)
+
+#### Week 5: Backend Integration
+
+- [ ] **Backend Updates**
+  - [ ] Update TurnService to call VLA server via HTTP
+  - [ ] Replace MockVLAService with HTTP client
+  - [ ] Configuration for VLA server URL
+  - [ ] Retry logic and circuit breaker
+  - [ ] Timeout management (120s)
+
+- [ ] **Integration Testing**
+  - [ ] Backend → VLA Server full flow
+  - [ ] Episode data saved to MongoDB
+  - [ ] Error scenarios (server down, timeout)
+  - [ ] Performance testing (episode generation < 60s)
+
+- [ ] **Documentation**
+  - [ ] VLA server API documentation (OpenAPI)
+  - [ ] Deployment guide (Docker)
+  - [ ] MacBook setup guide
 
 #### Acceptance Criteria
-- ✅ MuJoCo env can be created from config
-- ✅ State recording works (qpos, qvel at each step)
-- ✅ OpenVLA + Octo both generate actions
-- ✅ Turn creation endpoint returns 2 episode_ids
-- ✅ Episodes saved to MongoDB with all states
-- ✅ Variable episode length works (early termination detection)
-- ✅ Episode size < 15KB per episode (~13KB for 50 steps)
+- ✅ VLA server runs independently on port 8001
+- ✅ Franka Panda robot loads in MuJoCo
+- ✅ Octo-Small and SmolVLA models load
+- ✅ POST /execute generates episodes (max 50 steps)
+- ✅ Backend calls VLA server successfully
+- ✅ Episodes saved to MongoDB with all data
+- ✅ All 57 tests passing (15 + 12 + 20 + 10)
+- ✅ Works on MacBook (CPU/MPS mode)
+- ✅ Episode generation < 60 seconds per model
 
 ---
 
@@ -370,17 +412,18 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 |-----------|--------|----------|-------------|
 | Phase 0: Setup | ✅ Complete | 100% | 2025-01-04 |
 | Backend Foundation | 🔄 In Progress | 75% | Week 3 end |
-| VLA & MuJoCo | ⏸️ Not Started | 0% | Week 5 end |
+| VLA Server Development | 🔄 Starting | 5% | Week 5 end |
 | Frontend & Worker | ⏸️ Not Started | 0% | Week 6 end |
 | Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 45% complete
+**Overall MVP Progress:** 40% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
 - Models & Schemas: 100% (SQLModel + Pydantic schemas with TDD)
 - Core APIs: 60% (Session ✅, Models ✅, Turns ✅, Episodes ⏸️, Votes ⏸️, Leaderboard ⏸️)
 - Services: 75% (SessionService ✅, MockVLAService ✅, TurnService ✅)
+- VLA Server: 5% (Architecture designed, ADR-003 + FEATURES/002 written)
 
 ---
 
@@ -484,7 +527,9 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - **[00_PROJECT.md](./00_PROJECT.md)** - Project overview and architecture
 - **[ARCHITECTURE/ADR_001-Server_Side_Execution.md](./ARCHITECTURE/ADR_001-Server_Side_Execution.md)** - All server-side execution decision
 - **[ARCHITECTURE/ADR_002-Database_Schema.md](./ARCHITECTURE/ADR_002-Database_Schema.md)** - Complete database schema (PostgreSQL + MongoDB)
+- **[ARCHITECTURE/ADR_003-VLA_Server_Separation.md](./ARCHITECTURE/ADR_003-VLA_Server_Separation.md)** - VLA Server as separate microservice
 - **[FEATURES/001_MVP.md](./FEATURES/001_MVP.md)** - MVP implementation guide
+- **[FEATURES/002_VLA_Server.md](./FEATURES/002_VLA_Server.md)** - VLA Server specification and implementation
 - **[../lmarena-clone](../../lmarena-clone/)** - Reference codebase
 
 ---
@@ -503,10 +548,15 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-11-05 | Database foundation complete (Steps 1-3) | Claude |
 | 2025-11-05 | API schemas complete with TDD (23 tests) | Claude |
 | 2025-11-06 | Turn API complete with TDD (7 tests, MongoDB integration) | Claude |
+| 2025-01-06 | VLA Server separation decision (ADR-003) | Claude |
+| 2025-01-06 | Changed robot to Franka Panda (MuJoCo Menagerie) | Claude |
+| 2025-01-06 | Changed VLA models to Octo-Small + SmolVLA (MacBook compatible) | Claude |
+| 2025-01-06 | Created FEATURES/002_VLA_Server.md specification | Claude |
+| 2025-01-06 | Updated Week 3-5 timeline for VLA Server development | Claude |
 
 ---
 
-**Last Updated:** 2025-11-06
-**Status:** MVP Week 2-3 - Backend Foundation (75% complete)
-**Next Milestone:** Episode & Vote APIs
+**Last Updated:** 2025-01-06
+**Status:** MVP Week 3 - Starting VLA Server Development
+**Next Milestone:** VLA Server Infrastructure (Week 3)
 **Target MVP Completion:** Week 7
