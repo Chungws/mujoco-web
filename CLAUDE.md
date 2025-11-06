@@ -74,6 +74,61 @@ npm run lint
 
 ---
 
+### 4. Workspace & Dependencies Management
+
+**Project Structure:** uv workspace with centralized dev dependencies
+
+```
+mujoco-web/
+├── pyproject.toml          # Root: Dev dependencies & ruff config
+├── backend/pyproject.toml  # Only production dependencies
+├── worker/pyproject.toml   # Only production dependencies
+└── shared/pyproject.toml   # Only production dependencies
+```
+
+**CRITICAL RULES:**
+
+1. **Dev Dependencies ONLY in root:**
+   - ✅ `pytest`, `pytest-asyncio`, `pytest-cov` → Root
+   - ✅ `ruff` → Root
+   - ✅ `aiosqlite`, `greenlet`, `mongomock-motor` → Root
+   - ❌ NEVER add dev dependencies to sub-packages
+
+2. **Ruff Configuration ONLY in root:**
+   - ✅ `[tool.ruff]` → Root pyproject.toml only
+   - ❌ NO ruff config in backend/worker/shared
+
+3. **NO isort:**
+   - ❌ isort is redundant (ruff handles import sorting with `I` rule)
+   - ✅ Use `uvx ruff check --fix` for import sorting
+
+4. **Testing from root:**
+   ```bash
+   # ALWAYS run tests from project root
+   make test                                    # All tests
+   uv run --directory backend pytest -s         # Backend only
+   uv run --directory worker pytest -s          # Worker only
+   ```
+
+5. **Adding Dependencies:**
+   ```bash
+   # Production dependency → Sub-package
+   cd backend && uv add fastapi
+
+   # Dev dependency → Root
+   cd /path/to/root && uv add --dev pytest-mock
+   ```
+
+**Benefits:**
+- ✅ Single source of truth for dev tools
+- ✅ No version conflicts
+- ✅ Simpler maintenance
+- ✅ Workspace-level tooling available everywhere
+
+**See:** `managing-python-deps` skill for complete dependency management
+
+---
+
 ## 🎯 Skills & Slash Commands
 
 ### Available Skills
