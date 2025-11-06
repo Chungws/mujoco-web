@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     default_vla_model: str = "octo-small"
     device: str = "auto"  # auto (cuda → mps → cpu), cuda, cpu, mps
 
+    # Execution - based on RT-1/Octo standards
+    control_frequency: float = 5.0  # Hz (RT-1/Octo standard: 3-5 Hz)
+    max_episode_seconds: float = 15.0  # seconds (typical task duration)
+
     # Logging
     log_level: str = "INFO"
 
