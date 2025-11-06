@@ -71,10 +71,14 @@ class EpisodeRepository:
             logger.error(f"Validation error while creating episode {episode.episode_id}: {e}")
             raise EpisodeValidationError(episode.episode_id, e)
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"MongoDB connection error while creating episode {episode.episode_id}: {e}")
+            logger.error(
+                f"MongoDB connection error while creating episode {episode.episode_id}: {e}"
+            )
             raise EpisodeDatabaseError("create", e)
         except OperationFailure as e:
-            logger.error(f"MongoDB operation error while creating episode {episode.episode_id}: {e}")
+            logger.error(
+                f"MongoDB operation error while creating episode {episode.episode_id}: {e}"
+            )
             raise EpisodeDatabaseError("create", e)
         except Exception as e:
             logger.error(f"Unexpected error while creating episode {episode.episode_id}: {e}")
@@ -97,7 +101,9 @@ class EpisodeRepository:
         try:
             return await Episode.find(Episode.turn_id == turn_id).to_list()
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"MongoDB connection error while fetching episodes for turn {turn_id}: {e}")
+            logger.error(
+                f"MongoDB connection error while fetching episodes for turn {turn_id}: {e}"
+            )
             raise EpisodeDatabaseError("get_by_turn_id", e)
         except OperationFailure as e:
             logger.error(f"MongoDB operation error while fetching episodes for turn {turn_id}: {e}")
@@ -123,10 +129,14 @@ class EpisodeRepository:
         try:
             return await Episode.find(Episode.battle_id == battle_id).to_list()
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"MongoDB connection error while fetching episodes for battle {battle_id}: {e}")
+            logger.error(
+                f"MongoDB connection error while fetching episodes for battle {battle_id}: {e}"
+            )
             raise EpisodeDatabaseError("get_by_battle_id", e)
         except OperationFailure as e:
-            logger.error(f"MongoDB operation error while fetching episodes for battle {battle_id}: {e}")
+            logger.error(
+                f"MongoDB operation error while fetching episodes for battle {battle_id}: {e}"
+            )
             raise EpisodeDatabaseError("get_by_battle_id", e)
         except Exception as e:
             logger.error(f"Unexpected error while fetching episodes for battle {battle_id}: {e}")
