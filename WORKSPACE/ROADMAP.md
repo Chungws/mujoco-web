@@ -397,7 +397,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - Episodes API (GET /api/episodes/{id}) - 7 tests
   - Votes API (POST /api/votes) - 16 tests
   - Leaderboard API (GET /api/leaderboard?robot_id=...) - Robot-specific + Global ELO
-- ✅ Worker ELO aggregation - 40 tests passing (1 skipped)
+- ✅ Worker ELO aggregation - 40 tests passing
 - ✅ Frontend - Complete:
   - Battle Page (side-by-side viewers, voting, multi-turn)
   - Leaderboard Page (robot-specific + global rankings)
