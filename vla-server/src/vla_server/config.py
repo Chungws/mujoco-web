@@ -20,11 +20,7 @@ class Settings(BaseSettings):
     mujoco_model_path: str = "./models"
     vla_model_cache: str = "./model_cache"
     default_vla_model: str = "octo-small"
-
-    # Execution
-    max_episode_steps: int = 50
-    control_frequency: float = 10.0  # Hz
-    device: str = "auto"  # auto, cuda, cpu, mps
+    device: str = "auto"  # auto (cuda → mps → cpu), cuda, cpu, mps
 
     # Logging
     log_level: str = "INFO"
