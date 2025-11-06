@@ -4,6 +4,7 @@ Pytest configuration and fixtures for worker tests
 
 import os
 
+
 # IMPORTANT: Set test database URL BEFORE importing any modules
 # Use SQLite in-memory for fast, isolated tests
 os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"

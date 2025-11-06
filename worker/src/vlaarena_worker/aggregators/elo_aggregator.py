@@ -132,14 +132,10 @@ class ELOAggregator:
         right_score = get_score_from_vote(vote.vote, is_left=False)
 
         # Update robot-specific stats
-        await self._update_model_stats(
-            left_stats_robot, right_stats_robot, left_score, right_score
-        )
+        await self._update_model_stats(left_stats_robot, right_stats_robot, left_score, right_score)
 
         # Update global stats
-        await self._update_model_stats(
-            left_stats_total, right_stats_total, left_score, right_score
-        )
+        await self._update_model_stats(left_stats_total, right_stats_total, left_score, right_score)
 
         # Mark vote as processed
         vote.processing_status = "processed"

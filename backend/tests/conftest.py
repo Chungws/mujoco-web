@@ -2,7 +2,6 @@
 Pytest configuration and fixtures for backend tests
 """
 
-import asyncio
 import os
 
 
@@ -12,7 +11,6 @@ os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"
 os.environ["USE_MOCK_LLM"] = "true"
 os.environ["MODELS_CONFIG_PATH"] = "config/models.yaml"  # Relative to backend dir
 
-import pytest
 import pytest_asyncio
 from beanie import init_beanie
 from fastapi.testclient import TestClient

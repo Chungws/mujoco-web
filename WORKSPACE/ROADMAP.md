@@ -139,20 +139,19 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - [x] **Repository Layer**
   - [x] SessionRepository (PostgreSQL CRUD) - Already implemented
   - [x] BattleRepository (PostgreSQL CRUD) - Already implemented
-  - [ ] TurnRepository (PostgreSQL CRUD)
-  - [ ] VoteRepository (PostgreSQL CRUD)
-  - [ ] EpisodeRepository (MongoDB CRUD - Motor async)
-  - [ ] ModelStatsByRobotRepository (PostgreSQL CRUD)
-  - [ ] ModelStatsTotalRepository (PostgreSQL CRUD)
+  - [x] TurnRepository (PostgreSQL CRUD) - TDD with tests
+  - [x] VoteRepository (PostgreSQL CRUD) - TDD with tests
+  - [x] EpisodeRepository (MongoDB CRUD - Motor async) - TDD with 10 tests
+  - [x] ModelStatsRepository (PostgreSQL CRUD - dual ELO support) - TDD with 9 tests
   - [x] Base repository pattern - Already implemented
 
 - [x] **Core APIs**
   - [x] POST /api/sessions/init (create session+battle, assign models) - TDD with 15 tests
   - [ ] GET /api/battles/{battle_id} (get battle details with turns)
   - [x] POST /api/battles/{battle_id}/turns (create new turn with episodes) - TDD with 7 tests
-  - [ ] POST /api/votes (submit vote for turn)
+  - [x] POST /api/votes (submit vote for turn) - TDD with 16 tests
   - [x] GET /api/models (list available models) - TDD with 3 tests
-  - [ ] GET /api/leaderboard (robot-specific and global rankings)
+  - [x] GET /api/leaderboard (robot-specific and global rankings) - TDD with 5 tests
   - [x] Health check endpoint - Already implemented
 
 - [x] **Mock VLA Service (for MVP development)**
@@ -168,10 +167,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ MongoDB connection works (Beanie ODM with Motor async)
 - ✅ All SQLModel models match ADR-002 specification
 - ✅ MongoDB Episode document model with State and Metrics
-- ✅ All tests passing (69 backend + 19 worker = 88 total)
+- ✅ All tests passing (88 backend + 23 worker = 111 total)
 - ✅ Session can be created via API (POST /api/sessions/init with robot_id and scene_id)
 - ✅ API docs at /docs functional
-- ✅ Leaderboard API returns robot-specific and global ELO
+- ✅ Leaderboard API returns robot-specific and global ELO (TDD with 19 tests)
+- ✅ Worker aggregates votes and updates dual ELO rankings (robot-specific + global)
 
 ---
 

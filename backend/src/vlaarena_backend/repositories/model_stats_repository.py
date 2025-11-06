@@ -55,9 +55,7 @@ class ModelStatsRepository(BaseRepository[ModelStatsTotal]):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_total_votes(
-        self, min_vote_count: int = 5, robot_id: Optional[str] = None
-    ) -> int:
+    async def get_total_votes(self, min_vote_count: int = 5, robot_id: Optional[str] = None) -> int:
         """
         Get total number of votes across all models meeting minimum threshold
 
@@ -83,3 +81,37 @@ class ModelStatsRepository(BaseRepository[ModelStatsTotal]):
         result = await self.db.execute(stmt)
         total = result.scalar()
         return total if total is not None else 0
+
+    async def get_model_stats_by_robot(
+        self, model_id: str, robot_id: str
+    ) -> Optional[ModelStatsByRobot]:
+        """
+        Get robot-specific model statistics
+
+        Args:
+            model_id: Model identifier
+            robot_id: Robot identifier
+
+        Returns:
+            ModelStatsByRobot if found, None otherwise
+        """
+        stmt = select(ModelStatsByRobot).where(
+            ModelStatsByRobot.model_id == model_id,
+            ModelStatsByRobot.robot_id == robot_id,
+        )
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_model_stats_total(self, model_id: str) -> Optional[ModelStatsTotal]:
+        """
+        Get global model statistics
+
+        Args:
+            model_id: Model identifier
+
+        Returns:
+            ModelStatsTotal if found, None otherwise
+        """
+        stmt = select(ModelStatsTotal).where(ModelStatsTotal.model_id == model_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
