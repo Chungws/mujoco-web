@@ -18,7 +18,7 @@ class OctoSmallAdapter(VLAModelAdapter):
     Adapter for Octo-Small (27M) VLA model
 
     Key features:
-    - Image input: 256×256 RGB (resized from MuJoCo 224×224)
+    - Image input: 256x256 RGB (resized from MuJoCo 224x224)
     - Action output: 7-dim (end-effector control)
     - Action chunking: Predicts 4 actions, uses first (receding horizon)
     - Observation window: 2 timesteps (pad mask for first step)
@@ -115,7 +115,7 @@ class OctoSmallAdapter(VLAModelAdapter):
             ValueError: If observation format is invalid
 
         Note:
-            - Octo expects 256×256 images (not 224×224)
+            - Octo expects 256x256 images (not 224x224)
             - Adds batch and time dimensions: [batch=1, time=1, H, W, C]
             - Normalizes to [0, 1] range
             - timestep_pad_mask: True for valid observations
@@ -132,7 +132,7 @@ class OctoSmallAdapter(VLAModelAdapter):
         if image.ndim != 3 or image.shape[2] != 3:
             raise ValueError(f"image must be (H, W, 3), got {image.shape}")
 
-        # Resize to 256×256 (Octo requirement)
+        # Resize to 256x256 (Octo requirement)
         pil_image = Image.fromarray(image)
         resized_image = pil_image.resize((256, 256), Image.Resampling.BILINEAR)
         resized_array = np.array(resized_image, dtype=np.float32)
@@ -245,7 +245,7 @@ class OctoSmallAdapter(VLAModelAdapter):
         if len(raw_action.shape) != 3:
             raise ValueError(f"Expected 3D action, got shape {raw_action.shape}")
 
-        batch_size, pred_horizon, action_dim = raw_action.shape
+        batch_size, _pred_horizon, _action_dim = raw_action.shape
 
         if batch_size != 1:
             raise ValueError(f"Expected batch_size=1, got {batch_size}")
