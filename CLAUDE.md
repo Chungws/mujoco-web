@@ -238,21 +238,20 @@ uv run python -m vlaarena_worker.main
 
 ## 📊 Current Status
 
-**Phase:** MVP Development - Week 2-3 (Backend Foundation)
+**Phase:** MVP Development - Week 3-5 (VLA Server Phase 2)
 
 **Completed:**
-- ✅ Week 1: Project setup, ADR-001, ADR-002, Docker Compose
-- ✅ Step 1: PostgreSQL schema update (Session, Battle, Turn, Vote, ModelStats)
-- ✅ Step 2: MongoDB connection with Beanie ODM (Episode storage)
+- ✅ Week 1: Project setup, ADR-001, ADR-002, ADR-003, Docker Compose
+- ✅ Week 2-3: Backend Foundation (PostgreSQL, MongoDB, APIs, 88 backend tests)
+- ✅ Frontend & Worker (Battle page, Leaderboard, ELO aggregation, 40 worker tests)
+- ✅ VLA Server Phase 1: Infrastructure (Config + MuJoCo Environment, 26 tests)
 
 **Current Work:**
-- 🔄 Step 3: Alembic migration (done)
-- 🔄 Step 4: API endpoints (session, battles, episodes, voting)
+- 🔄 VLA Server Phase 2: VLA Integration (Adapters, Execution Service, API)
 
 **Next:**
-- ⏭️ Week 3-4: VLA execution service (MuJoCo + model inference)
-- ⏭️ Week 4-5: Frontend battle page + leaderboard
-- ⏭️ Week 5-6: Worker + ELO calculation
+- ⏭️ Complete VLA Server Phase 2
+- ⏭️ Backend integration with VLA Server
 
 **Detailed roadmap:** `WORKSPACE/FEATURES/001_MVP.md`
 
@@ -403,6 +402,6 @@ mujoco-web/
 ---
 
 **Created:** 2025-11-01
-**Last Updated:** 2025-11-05
-**Current Phase:** MVP Development - Backend Foundation (Week 2-3)
+**Last Updated:** 2025-11-07
+**Current Phase:** MVP Development - VLA Server Phase 2 (Week 3-5)
 **Current Feature:** `WORKSPACE/FEATURES/001_MVP.md`

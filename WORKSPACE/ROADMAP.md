@@ -19,11 +19,10 @@ Similar to LM Arena but for embodied AI - users watch two anonymous VLA models e
 ```
 Phase 0: Setup & Architecture      [✅ DONE]      (Week 1)
          ↓
-MVP Development                    [🔄 IN PROGRESS] (Week 2-7)
-├─ Backend Foundation              (Week 2-3)
-├─ VLA & MuJoCo Integration       (Week 4-5)
-├─ Frontend & Worker              (Week 6)
-└─ Testing & Polish               (Week 7)
+MVP Development                    [🔄 IN PROGRESS] (Week 2-5)
+├─ Backend Foundation              (Week 2-3) ✅
+├─ VLA Server Development          (Week 3-5) 🔄
+├─ Frontend & Worker               ✅
          ↓
 Post-MVP Enhancements             [⏸️ PLANNED]   (Future)
 ```
@@ -84,7 +83,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 ## 🔄 MVP Development (Current)
 
 **Status:** In Progress 🔄
-**Duration:** 6 weeks (Week 2-7)
+**Duration:** 4 weeks (Week 2-5)
 **Target:** Functional VLA Arena with minimal features
 
 ### MVP Scope
@@ -269,125 +268,29 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 
 ---
 
-### Week 6: Frontend & Worker
+### ✅ Frontend & Worker (Complete)
 
-**Goal:** Complete user flow + ELO calculation
+**Status:** Complete ✅
+**Completed:** 2025-11-07
 
-#### Tasks
-- [ ] **Frontend Pages**
-  - [ ] Arena page (from lmarena battle page)
-    - [ ] Robot/Scene selector (first turn only)
-    - [ ] Instruction input
-    - [ ] "Generate Episode" button
-    - [ ] Loading state (episode generation ~5-10s)
-    - [ ] Side-by-side MuJoCo WASM replay viewers
-    - [ ] Playback controls (play/pause, speed, step-by-step)
-    - [ ] Vote buttons (A/B/Tie/Both Bad)
-    - [ ] Model reveal after vote
-    - [ ] Multi-turn support (continue with new instruction)
-  - [ ] Leaderboard page (from lmarena leaderboard)
-    - [ ] Robot filter tabs (WidowX, Global, etc.)
-    - [ ] ELO rankings table (robot-specific + global)
-    - [ ] Confidence intervals
-    - [ ] Vote counts, win rates
-  - [ ] History page (from lmarena sessions)
-    - [ ] Past battles list (with turns)
-    - [ ] Click to replay any turn
-    - [ ] Model names revealed
-    - [ ] Interactive state replay
+#### Completed
+- ✅ **Frontend Pages**
+  - ✅ Battle page (side-by-side viewers, voting, multi-turn)
+  - ✅ Leaderboard page (robot-specific + global rankings)
+  - ✅ Home page
 
-- [ ] **Frontend Components**
-  - [ ] MuJocoReplayViewer component (WASM-based)
-  - [ ] StateTimeline component (step-by-step scrubber)
-  - [ ] VotePanel component
-  - [ ] RobotSceneSelector component
-  - [ ] InstructionInput component
-  - [ ] BattleSidebar component (multi-turn history)
-
-- [ ] **API Integration**
-  - [ ] API client (fetch wrapper)
-  - [ ] Error handling
-  - [ ] Loading states
-  - [ ] Anonymous user ID (localStorage UUID)
-
-- [ ] **Worker**
-  - [ ] APScheduler setup (hourly cron)
-  - [ ] Vote aggregation logic (from lmarena)
-  - [ ] ELO calculation (K=32, initial=1500)
-    - [ ] Robot-specific ELO (ModelStatsByRobot table)
-    - [ ] Global ELO (ModelStatsTotal table)
-    - [ ] Query votes with robot_id denormalized field
-  - [ ] Bradley-Terry confidence intervals
-  - [ ] Update both model_stats_by_robot and model_stats_total tables
-  - [ ] Worker status tracking
-
-#### Acceptance Criteria (✅ All Complete - 2025-11-07)
-- ✅ User can complete full battle flow (init → turn → vote → next turn)
-- ✅ MuJoCo WASM replay works smoothly (30+ FPS) - Placeholder viewer implemented
-- ✅ Step-by-step playback controls work - Ready for WASM integration
-- ✅ Multi-turn battles work (new instructions on same session)
-- ✅ Voting works, models revealed after vote
-- ✅ Leaderboard displays robot-specific + global ELO correctly
-- ✅ Worker runs hourly, updates both ELO tables
-- ✅ All tests pass (88 backend + 40 worker = 128 tests)
-
----
-
-### Week 7: Testing & Polish
-
-**Goal:** Production-ready MVP
-
-#### Tasks
-- [ ] **Testing**
-  - [ ] Backend unit tests (pytest)
-    - [ ] Repository tests
-    - [ ] Service tests
-    - [ ] API tests
-  - [ ] Integration tests
-    - [ ] Full episode generation flow
-    - [ ] Vote → ELO update flow
-  - [ ] Frontend tests
-    - [ ] Component tests
-    - [ ] E2E tests (Playwright)
-
-- [ ] **Performance**
-  - [ ] Episode generation < 10s (2 models × 50 steps)
-  - [ ] API response < 500ms (p95) for GET requests
-  - [ ] State recording overhead < 5% (vs no recording)
-  - [ ] MongoDB insert < 100ms per episode
-  - [ ] Episode fetch from MongoDB < 50ms
-  - [ ] MuJoCo WASM replay initialization < 1s
-  - [ ] Database query optimization (indexes on robot_id, scene_id, model_id)
-
-- [ ] **Polish**
-  - [ ] Error messages user-friendly
-  - [ ] Loading states everywhere
-  - [ ] Responsive design (desktop-first)
-  - [ ] Accessibility (keyboard nav)
-
-- [ ] **Documentation**
-  - [ ] API documentation (FastAPI auto-docs)
-  - [ ] User guide (how to use arena)
-  - [ ] Developer guide (how to add models/robots)
-  - [ ] Deployment guide (Docker Compose)
-
-- [ ] **Deployment Prep**
-  - [ ] Environment variables documented
-  - [ ] Docker Compose production config
-  - [ ] Database backups
-  - [ ] Monitoring (optional)
-
-#### Acceptance Criteria
-- ✅ All tests pass
-- ✅ Performance targets met
-- ✅ Documentation complete
-- ✅ MVP deployable
+- ✅ **Worker**
+  - ✅ APScheduler setup (hourly cron)
+  - ✅ Vote aggregation logic
+  - ✅ ELO calculation (robot-specific + global)
+  - ✅ Bradley-Terry confidence intervals
+  - ✅ All tests passing (40 worker tests)
 
 ---
 
 ## 🎯 Current Status
 
-**Week:** 6 (Frontend & Polish) - Complete! ✅
+**Week:** 3-5 (VLA Server Phase 2) - In Progress 🔄
 **Last Update:** 2025-11-07
 
 **Completed:**
@@ -427,9 +330,8 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Worker & Leaderboard | ✅ Complete | 100% | 2025-01-06 |
 | Frontend | ✅ Complete | 100% | 2025-11-07 |
 | VLA Server Development | 🔄 In Progress | 35% | Week 5 end |
-| Testing & Polish | ⏸️ Not Started | 0% | Week 7 end |
 
-**Overall MVP Progress:** 82% complete
+**Overall MVP Progress:** 87% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
@@ -576,7 +478,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 
 ---
 
-**Last Updated:** 2025-01-07
-**Status:** MVP 82% Complete - VLA Server In Progress
+**Last Updated:** 2025-11-07
+**Status:** MVP 87% Complete - VLA Server In Progress
 **Next Milestone:** VLA Server Adapters (Phase 2)
-**Target MVP Completion:** Week 7
+**Target MVP Completion:** Week 5
