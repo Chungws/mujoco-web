@@ -8,6 +8,7 @@ Test Coverage:
 """
 
 import pytest
+import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from vlaarena_backend.services.votes_service import create_vote
@@ -17,7 +18,7 @@ from vlaarena_shared.schemas import VoteRequest
 # ==================== Fixtures ====================
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def sample_session(db: AsyncSession):
     """Create a sample session for testing"""
     session = Session(
@@ -31,7 +32,7 @@ async def sample_session(db: AsyncSession):
     return session
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def sample_battle(db: AsyncSession, sample_session: Session):
     """Create a sample battle for testing"""
     battle = Battle(
