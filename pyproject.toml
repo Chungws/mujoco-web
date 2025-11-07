@@ -24,9 +24,13 @@ dev = [
 [tool.uv.workspace]
 members = [
     "backend",
- "worker",
- "shared",
- "vla-server",
+    "worker",
+    "shared",
+    "vla-server-base",
+]
+exclude = [
+    "vla-server",
+    "vla-servers/*",
 ]
 
 [tool.uv.sources]

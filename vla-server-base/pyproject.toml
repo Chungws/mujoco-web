@@ -1,0 +1,20 @@
+[project]
+name = "vla-server-base"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "WooSeong Chung", email = "jungyh0528@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "mujoco>=3.3.7",
+    "numpy>=2.3.4",
+    "pillow>=12.0.0",
+    "pydantic>=2.12.3",
+    "pydantic-settings>=2.11.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
