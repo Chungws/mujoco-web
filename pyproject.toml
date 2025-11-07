@@ -59,3 +59,9 @@ ignore = [
     "B008",   # function call in argument defaults (For FastAPI)
 ]
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    # Ignore Pydantic v2.11 deprecation warnings (will be fixed in Beanie/dependencies)
+    "ignore::pydantic.warnings.PydanticDeprecatedSince211",
+]
+
