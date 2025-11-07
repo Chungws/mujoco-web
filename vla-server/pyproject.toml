@@ -9,12 +9,20 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "accelerate>=1.11.0",
+    "distrax>=0.1.5",
+    "einops>=0.6.1",
     "fastapi>=0.119.1",
+    "flax>=0.7.0",
+    "jax>=0.4.35",
+    "jaxlib>=0.4.35",
+    "ml-collections>=0.1.0",
     "mujoco>=3.3.7",
     "numpy>=2.3.4",
+    "octo",
     "pillow>=12.0.0",
     "pydantic>=2.12.3",
     "pydantic-settings>=2.11.0",
+    "tensorflow-probability>=0.23.0",
     "torch>=2.9.0",
     "transformers>=4.57.1",
     "uvicorn[standard]>=0.38.0",
@@ -23,3 +31,6 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv.sources]
+octo = { git = "https://github.com/octo-models/octo.git" }

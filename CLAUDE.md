@@ -142,6 +142,7 @@ Use these skills for specialized workflows:
 | `committing-changes` | Git commit format (`<type>: <subject>`, Co-authored-by) |
 | `creating-pull-requests` | GitHub PR creation (English, develop target, <300 lines) |
 | `fastapi-patterns` | Backend architecture (4-layer: models→schemas→service→router) |
+| `fixing-linting-errors` | Ruff linting workflow (ALWAYS run from root, auto-fix → manual fix) |
 | `frontend-ui-testing` | Chrome DevTools MCP verification (MANDATORY for UI changes) |
 | `git-branching` | Git Flow branching (feature/*, develop, main) |
 | `managing-python-deps` | uv dependency management (NEVER use pip) |

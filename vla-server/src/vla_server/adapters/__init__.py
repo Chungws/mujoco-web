@@ -6,6 +6,7 @@ Provides factory function to get appropriate adapter based on model_id
 
 from .base import VLAModelAdapter
 from .mock_adapter import MockVLAAdapter
+from .octo_small_adapter import OctoSmallAdapter
 
 
 def get_adapter(model_id: str) -> VLAModelAdapter:
@@ -26,11 +27,11 @@ def get_adapter(model_id: str) -> VLAModelAdapter:
         >>> adapter.load_model("mock", "cpu", "./cache")
     """
     # Adapter registry
-    # TODO: Add octo-small and smolvla adapters in future PRs
+    # Supports multiple frameworks: JAX (Octo) and PyTorch (SmolVLA)
     adapters = {
         "mock": MockVLAAdapter,
-        # Future: "octo-small": OctoSmallAdapter,
-        # Future: "smolvla": SmolVLAAdapter,
+        "octo-small": OctoSmallAdapter,  # JAX-based
+        # Future: "smolvla": SmolVLAAdapter,  # PyTorch-based
     }
 
     adapter_class = adapters.get(model_id)
@@ -43,6 +44,7 @@ def get_adapter(model_id: str) -> VLAModelAdapter:
 
 __all__ = [
     "MockVLAAdapter",
+    "OctoSmallAdapter",
     "VLAModelAdapter",
     "get_adapter",
 ]
