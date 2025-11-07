@@ -22,12 +22,35 @@ Uses microservice pattern with:
 ```bash
 cd vla-servers/octo-small
 
-# Install dependencies (JAX CPU version for development)
+# Development (CPU only)
 uv sync
 
-# For GPU support, install JAX with CUDA:
-# pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+# GPU support (CUDA 12)
+uv sync --extra cuda12
+
+# GPU support (CUDA 13)
+uv sync --extra cuda13
 ```
+
+### Manual GPU Installation (Alternative)
+
+If you need a specific CUDA version:
+
+```bash
+# After uv sync, install JAX with CUDA manually
+pip install --upgrade "jax[cuda12]"  # CUDA 12
+pip install --upgrade "jax[cuda13]"  # CUDA 13
+```
+
+### Verify GPU Detection
+
+```bash
+uv run python -c "import jax; print(f'JAX devices: {jax.devices()}'); print(f'Device platform: {jax.devices()[0].platform}')"
+```
+
+Expected output:
+- CPU: `Device platform: cpu`
+- GPU: `Device platform: gpu`
 
 ## Running
 

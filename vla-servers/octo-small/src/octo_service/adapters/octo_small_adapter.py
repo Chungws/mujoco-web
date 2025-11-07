@@ -50,8 +50,8 @@ class OctoSmallAdapter(VLAModelAdapter):
             RuntimeError: If model loading fails
 
         Note:
-            JAX device management is different from PyTorch.
-            Device selection happens via JAX_PLATFORMS environment variable.
+            JAX automatically detects and uses GPUs when available.
+            Device configuration happens via JAX backend selection.
         """
         if not model_id:
             raise ValueError("model_id cannot be empty")
@@ -60,16 +60,41 @@ class OctoSmallAdapter(VLAModelAdapter):
         from octo.model.octo_model import OctoModel
 
         try:
+            # Detect available JAX devices
+            detected_device = self._detect_jax_device()
+
             # Load from HuggingFace
             # Octo uses "octo-small-1.5" for the latest version
             hf_path = "hf://rail-berkeley/octo-small-1.5"
 
             self.model = OctoModel.load_pretrained(hf_path)
             self.model_id = model_id
-            self.device = device
+            self.device = detected_device
 
         except Exception as e:
             raise RuntimeError(f"Failed to load Octo-Small model: {e}") from e
+
+    def _detect_jax_device(self) -> str:
+        """
+        Detect available JAX device
+
+        Returns:
+            Device type: "cuda" if GPU available, "cpu" otherwise
+
+        Note:
+            JAX automatically uses GPU when available.
+            This method just reports what JAX is using.
+        """
+        try:
+            devices = jax.devices()
+            if devices:
+                platform = devices[0].platform
+                if platform == "gpu":
+                    return "cuda"
+                return platform
+        except Exception:
+            pass
+        return "cpu"
 
     def preprocess_observation(self, obs: dict[str, Any]) -> dict[str, Any]:
         """
