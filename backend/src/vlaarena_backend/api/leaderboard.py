@@ -6,12 +6,11 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from vlaarena_backend.database import get_db
-from vlaarena_backend.services.leaderboard_service import LeaderboardService
 from vlaarena_shared.config import settings
 from vlaarena_shared.schemas import LeaderboardResponse
 
+from vlaarena_backend.database import get_db
+from vlaarena_backend.services.leaderboard_service import LeaderboardService
 
 logger = logging.getLogger(__name__)
 
@@ -55,5 +54,5 @@ async def get_leaderboard(
         logger.error(f"Failed to get leaderboard: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get leaderboard: {str(e)}",
-        )
+            detail=f"Failed to get leaderboard: {e!s}",
+        ) from e

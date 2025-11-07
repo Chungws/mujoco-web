@@ -6,7 +6,6 @@ Tests that Worker correctly updates both ModelStatsByRobot and ModelStatsTotal t
 
 import pytest
 from sqlmodel import select
-
 from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal, Vote
 
 

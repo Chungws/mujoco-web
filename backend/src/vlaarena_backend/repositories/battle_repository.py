@@ -2,11 +2,8 @@
 Battle repository for database operations
 """
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_shared.models import Battle
 
 from .base import BaseRepository
@@ -18,7 +15,7 @@ class BattleRepository(BaseRepository[Battle]):
     def __init__(self, db: AsyncSession):
         super().__init__(Battle, db)
 
-    async def get_by_battle_id(self, battle_id: str) -> Optional[Battle]:
+    async def get_by_battle_id(self, battle_id: str) -> Battle | None:
         """
         Get battle by battle_id string
 
@@ -30,7 +27,7 @@ class BattleRepository(BaseRepository[Battle]):
         """
         return await self.get_by_field("battle_id", battle_id)
 
-    async def get_by_session_id(self, session_id: str, limit: Optional[int] = None) -> list[Battle]:
+    async def get_by_session_id(self, session_id: str, limit: int | None = None) -> list[Battle]:
         """
         Get all battles for a session
 
@@ -49,7 +46,7 @@ class BattleRepository(BaseRepository[Battle]):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_ongoing_battles(self, limit: Optional[int] = None) -> list[Battle]:
+    async def get_ongoing_battles(self, limit: int | None = None) -> list[Battle]:
         """
         Get all ongoing battles (not voted yet)
 

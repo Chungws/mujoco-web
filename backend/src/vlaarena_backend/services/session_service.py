@@ -8,11 +8,9 @@ import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_shared.models import Battle, Session
 
 from ..repositories import BattleRepository, SessionRepository
-
 
 logger = logging.getLogger(__name__)
 

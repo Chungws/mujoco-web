@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pydantic import ValidationError
 from pymongo.errors import ConnectionFailure, OperationFailure, ServerSelectionTimeoutError
-
 from vlaarena_backend.exceptions import EpisodeDatabaseError, EpisodeValidationError
 from vlaarena_backend.repositories.episode_repository import EpisodeRepository
 from vlaarena_shared.mongodb_models import Episode, State

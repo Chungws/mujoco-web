@@ -5,11 +5,9 @@ Models API endpoints
 import logging
 
 from fastapi import APIRouter, Depends
-
 from vlaarena_shared.schemas import ModelsListResponse
 
 from ..services.model_service import ModelService, get_model_service
-
 
 logger = logging.getLogger(__name__)
 

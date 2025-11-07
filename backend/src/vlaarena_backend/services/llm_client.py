@@ -12,14 +12,11 @@ import logging
 import random
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
 
 from openai import AsyncOpenAI
-
 from vlaarena_shared.config import settings
 
 from .model_service import ModelConfig
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +46,7 @@ class LLMClientInterface(ABC):
     async def chat_completion(
         self,
         model_config: ModelConfig,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
     ) -> LLMResponse:
         """
         Call LLM API with chat completion format
@@ -92,7 +89,7 @@ class OpenAILLMClient(LLMClientInterface):
     async def chat_completion(
         self,
         model_config: ModelConfig,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
     ) -> LLMResponse:
         """
         Call OpenAI-compatible API using official SDK
@@ -136,11 +133,10 @@ class OpenAILLMClient(LLMClientInterface):
         except Exception as e:
             latency_ms = int((time.time() - start_time) * 1000)
             error_msg = (
-                f"LLM API call failed: model={model_config.id}, "
-                f"latency={latency_ms}ms, error={str(e)}"
+                f"LLM API call failed: model={model_config.id}, latency={latency_ms}ms, error={e!s}"
             )
             logger.error(error_msg)
-            raise Exception(error_msg)
+            raise Exception(error_msg) from e
 
 
 class MockLLMClient(LLMClientInterface):
@@ -154,7 +150,7 @@ class MockLLMClient(LLMClientInterface):
     async def chat_completion(
         self,
         model_config: ModelConfig,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
     ) -> LLMResponse:
         """
         Return mock response based on model and prompt
@@ -195,7 +191,7 @@ class MockLLMClient(LLMClientInterface):
 
 
 # Singleton instance (mutable for dependency injection)
-_llm_client: Optional[LLMClientInterface] = None
+_llm_client: LLMClientInterface | None = None
 
 
 def get_llm_client() -> LLMClientInterface:

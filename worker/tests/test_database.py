@@ -4,7 +4,6 @@ Tests for PostgreSQL database connection
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_worker.database import async_session_maker, engine, get_db
 
 

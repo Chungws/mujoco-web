@@ -37,6 +37,9 @@ packages = []
 
 [tool.ruff]
 line-length = 100
+exclude = [
+    "backend/alembic/",
+]
 
 [tool.ruff.lint]
 select = [

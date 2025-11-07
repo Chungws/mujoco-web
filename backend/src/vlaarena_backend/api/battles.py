@@ -6,11 +6,10 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from vlaarena_shared.schemas import TurnRequest, TurnResponse
 
 from vlaarena_backend.database import get_db
 from vlaarena_backend.services.turn_service import TurnService
-from vlaarena_shared.schemas import TurnRequest, TurnResponse
-
 
 logger = logging.getLogger(__name__)
 
@@ -61,16 +60,16 @@ async def create_turn(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=str(e),
-            )
+            ) from e
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e),
-            )
+            ) from e
 
     except Exception as e:
         logger.error(f"Failed to create turn for battle {battle_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create turn: {str(e)}",
-        )
+            detail=f"Failed to create turn: {e!s}",
+        ) from e

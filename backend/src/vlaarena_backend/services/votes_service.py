@@ -9,7 +9,6 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_shared.models import Battle, Session, Vote
 from vlaarena_shared.schemas import VoteRequest
 

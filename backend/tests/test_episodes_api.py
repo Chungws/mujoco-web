@@ -10,7 +10,6 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 from pymongo.errors import ConnectionFailure, OperationFailure
-
 from vlaarena_shared.mongodb_models import Episode, State
 
 

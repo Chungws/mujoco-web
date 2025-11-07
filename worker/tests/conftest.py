@@ -4,7 +4,6 @@ Pytest configuration and fixtures for worker tests
 
 import os
 
-
 # IMPORTANT: Set test database URL BEFORE importing any modules
 # Use SQLite in-memory for fast, isolated tests
 os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"
@@ -14,7 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
-
 
 # Test database URL - SQLite in-memory for isolated, fast tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

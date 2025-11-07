@@ -26,7 +26,7 @@ class EpisodeDatabaseError(EpisodeRepositoryError):
     def __init__(self, operation: str, error: Exception):
         self.operation = operation
         self.original_error = error
-        super().__init__(f"Database error during {operation}: {str(error)}")
+        super().__init__(f"Database error during {operation}: {error!s}")
 
 
 class EpisodeValidationError(EpisodeRepositoryError):
@@ -35,4 +35,4 @@ class EpisodeValidationError(EpisodeRepositoryError):
     def __init__(self, episode_id: str, error: Exception):
         self.episode_id = episode_id
         self.original_error = error
-        super().__init__(f"Invalid episode data for {episode_id}: {str(error)}")
+        super().__init__(f"Invalid episode data for {episode_id}: {error!s}")

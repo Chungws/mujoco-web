@@ -4,7 +4,6 @@ Pytest configuration and fixtures for backend tests
 
 import os
 
-
 # IMPORTANT: Set test database URL and mock LLM BEFORE importing app
 # Use SQLite in-memory for fast, isolated tests
 os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"
@@ -19,10 +18,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
-
 from vlaarena_backend.main import app
 from vlaarena_shared.mongodb_models import Episode
-
 
 # Temporary: Comment out LLM client imports (not needed for VLA Arena MVP)
 # from vlaarena_backend.services.llm_client import (

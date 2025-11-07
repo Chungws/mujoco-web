@@ -5,10 +5,8 @@ Following TDD workflow: Red → Green → Refactor
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_backend.services.session_service import init_session
 from vlaarena_shared.models import Battle, Session
-
 
 # ==================== SessionService.init_session Tests ====================
 

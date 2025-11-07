@@ -8,14 +8,12 @@ and update ELO ratings.
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict
 
 import yaml
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-
 from vlaarena_shared.config import settings
 from vlaarena_shared.logging_config import setup_logging
 from vlaarena_shared.models import WorkerStatus
@@ -23,13 +21,12 @@ from vlaarena_shared.models import WorkerStatus
 from .aggregators.elo_aggregator import ELOAggregator
 from .database import async_session_maker
 
-
 # Configure package-level logging
 # Child modules (e.g., vlaarena_worker.*) will inherit this configuration
 logger = setup_logging("vlaarena_worker")
 
 
-def load_model_configs() -> Dict[str, Dict[str, str]]:
+def load_model_configs() -> dict[str, dict[str, str]]:
     """
     Load model configurations from YAML file
 
@@ -43,7 +40,7 @@ def load_model_configs() -> Dict[str, Dict[str, str]]:
         return {}
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
         if not config or "models" not in config:

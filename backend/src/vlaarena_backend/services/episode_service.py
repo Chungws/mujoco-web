@@ -3,15 +3,13 @@ Episode service for business logic
 """
 
 import logging
-from typing import Optional
 
 from pydantic import ValidationError
-
-from vlaarena_backend.exceptions import EpisodeValidationError
-from vlaarena_backend.repositories.episode_repository import EpisodeRepository
 from vlaarena_shared.mongodb_models import Episode
 from vlaarena_shared.schemas import EpisodeResponse, EpisodeState
 
+from vlaarena_backend.exceptions import EpisodeValidationError
+from vlaarena_backend.repositories.episode_repository import EpisodeRepository
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +26,7 @@ class EpisodeService:
         """Initialize episode service"""
         self.repository = EpisodeRepository()
 
-    async def get_episode(self, episode_id: str) -> Optional[Episode]:
+    async def get_episode(self, episode_id: str) -> Episode | None:
         """
         Get episode by ID
 
@@ -43,7 +41,7 @@ class EpisodeService:
         """
         return await self.repository.get_by_episode_id(episode_id)
 
-    async def get_episode_response(self, episode_id: str) -> Optional[EpisodeResponse]:
+    async def get_episode_response(self, episode_id: str) -> EpisodeResponse | None:
         """
         Get episode formatted as API response
 
@@ -83,7 +81,7 @@ class EpisodeService:
             )
         except ValidationError as e:
             logger.error(f"Validation error while converting episode {episode_id} to response: {e}")
-            raise EpisodeValidationError(episode_id, e)
+            raise EpisodeValidationError(episode_id, e) from e
         except Exception as e:
             logger.error(f"Unexpected error while converting episode {episode_id} to response: {e}")
-            raise EpisodeValidationError(episode_id, e)
+            raise EpisodeValidationError(episode_id, e) from e

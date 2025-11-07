@@ -2,10 +2,7 @@
 Leaderboard business logic service
 """
 
-from typing import List
-
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal
 from vlaarena_shared.schemas import LeaderboardResponse, ModelRanking
 
@@ -42,8 +39,8 @@ class LeaderboardService:
 
     def _build_rankings(
         self,
-        models: List[ModelStatsByRobot | ModelStatsTotal],
-    ) -> List[ModelRanking]:
+        models: list[ModelStatsByRobot | ModelStatsTotal],
+    ) -> list[ModelRanking]:
         """
         Build model rankings from stats
 

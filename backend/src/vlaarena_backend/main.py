@@ -7,8 +7,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from vlaarena_backend.api import battles, episodes, leaderboard, models, sessions, votes
-
 # Temporary: Comment out LLM client (not needed for VLA Arena MVP session init)
 # from vlaarena_backend.services.llm_client import (
 #     MockLLMClient,
@@ -18,6 +16,7 @@ from vlaarena_backend.api import battles, episodes, leaderboard, models, session
 from vlaarena_shared.config import settings
 from vlaarena_shared.logging_config import setup_logging
 
+from vlaarena_backend.api import battles, episodes, leaderboard, models, sessions, votes
 
 # Configure logging
 logger = setup_logging("vlaarena_backend")

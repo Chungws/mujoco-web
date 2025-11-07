@@ -11,7 +11,6 @@ Implements standard ELO rating algorithm with:
 
 import math
 
-
 # ELO constants
 INITIAL_ELO = 1500
 K_FACTOR = 32

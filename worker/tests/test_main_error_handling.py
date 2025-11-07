@@ -7,11 +7,10 @@ Following TDD workflow:
 - Refactor: Improve code quality
 """
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 from sqlmodel import select
-
 from vlaarena_shared.models import WorkerStatus
 from vlaarena_worker.main import (
     _update_worker_status,
@@ -27,6 +26,7 @@ class TestLoadModelConfigs:
         """Test graceful handling when config file doesn't exist"""
         # Arrange - Monkeypatch settings.models_config_path directly
         from vlaarena_shared.config import settings
+
         monkeypatch.setattr(settings, "models_config_path", "/nonexistent/path/models.yaml")
 
         # Act
@@ -43,6 +43,7 @@ class TestLoadModelConfigs:
 
         # Monkeypatch settings to use temp file
         from vlaarena_shared.config import settings
+
         monkeypatch.setattr(settings, "models_config_path", str(config_file))
 
         # Act
@@ -59,6 +60,7 @@ class TestLoadModelConfigs:
 
         # Monkeypatch settings to use temp file
         from vlaarena_shared.config import settings
+
         monkeypatch.setattr(settings, "models_config_path", str(config_file))
 
         # Act
@@ -102,7 +104,7 @@ class TestRunAggregationErrors:
         monkeypatch.setattr(ELOAggregator, "process_pending_votes", mock_process_error)
 
         # Act - Should catch error and update worker_status
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="Aggregation processing failed"):
             await run_aggregation(test_db_session)
 
         # Assert - Check worker_status was updated with error

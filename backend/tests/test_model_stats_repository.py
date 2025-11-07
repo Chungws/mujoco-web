@@ -9,7 +9,6 @@ Following TDD workflow:
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_backend.repositories.model_stats_repository import ModelStatsRepository
 from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal
 
