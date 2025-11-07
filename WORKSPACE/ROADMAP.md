@@ -205,14 +205,15 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [x] Get state for recording (qpos, qvel, time)
   - [x] Error handling (invalid robot/scene)
 
-- [ ] **VLA Adapter Pattern (TDD - 20 tests)** (next PR)
-  - [ ] adapters/base.py - Abstract adapter interface
-  - [ ] adapters/openvla_adapter.py - OpenVLA 7B adapter
-  - [ ] adapters/octo_adapter.py - Octo-Base adapter
-  - [ ] Model-specific preprocessing/postprocessing
-  - [ ] Device management (auto, cuda, cpu, mps)
-  - [ ] Model caching (lazy loading)
-  - [ ] MacBook compatibility (CPU/MPS mode)
+- [x] **VLA Adapter Pattern - Base + Mock (TDD - 20 tests)** ✅ PR 1 Complete
+  - [x] adapters/base.py - Abstract adapter interface
+  - [x] adapters/mock_adapter.py - Mock adapter for testing
+  - [x] adapters/__init__.py - Factory function (get_adapter)
+  - [x] Comprehensive tests (20 tests passing)
+  - [x] Device management interface (auto, cuda, cpu, mps)
+  - [ ] adapters/octo_small_adapter.py - Octo-Small 27M adapter (PR 2)
+  - [ ] adapters/smolvla_adapter.py - SmolVLA 450M adapter (PR 3)
+  - [ ] MacBook compatibility (CPU/MPS mode) (PR 2-3)
 
 #### Week 4: VLA Server Core Logic
 
@@ -315,9 +316,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ **Total: 128 passing tests (88 backend + 40 worker)**
 
 **Next Up:**
-- VLA Server Development (Week 3-5) - In Progress (35% complete)
+- VLA Server Development (Week 3-5) - In Progress (45% complete)
   - ✅ Phase 1: Config + MuJoCo Environment (26 tests passing)
-  - ⏭️ Phase 2: VLA Adapters (next PR)
+  - ✅ Phase 2 PR 1: Base Adapter + Mock (20 tests passing)
+  - ⏭️ Phase 2 PR 2: Octo-Small Adapter (next PR)
+  - ⏭️ Phase 2 PR 3: SmolVLA Adapter
 
 ---
 
@@ -329,9 +332,9 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Backend Foundation | ✅ Complete | 100% | 2025-01-06 |
 | Worker & Leaderboard | ✅ Complete | 100% | 2025-01-06 |
 | Frontend | ✅ Complete | 100% | 2025-11-07 |
-| VLA Server Development | 🔄 In Progress | 35% | Week 5 end |
+| VLA Server Development | 🔄 In Progress | 45% | Week 5 end |
 
-**Overall MVP Progress:** 87% complete
+**Overall MVP Progress:** 89% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
@@ -340,7 +343,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - Services: 100% (SessionService ✅, MockVLAService ✅, TurnService ✅, VoteService ✅)
 - Worker & Leaderboard: 100% (ELO aggregation ✅, robot-specific + global ELO ✅, 40 tests ✅)
 - Frontend: 100% (Battle Page ✅, Leaderboard Page ✅, Home Page ✅)
-- VLA Server: 35% (Config + MuJoCo Environment ✅, 26 tests ✅, Adapters next)
+- VLA Server: 45% (Config ✅, MuJoCo Env ✅, Base Adapter + Mock ✅, 46 tests ✅, Octo-Small next)
 
 ---
 
@@ -475,10 +478,11 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-11-07 | Updated progress tracking (80% MVP complete) | Claude |
 | 2025-11-07 | Removed obsolete BACKEND_STATUS.md and FRONTEND_STATUS.md | Claude |
 | 2025-01-07 | VLA Server Phase 1: Config + MuJoCo Environment (26 tests) | Claude |
+| 2025-11-07 | VLA Server Phase 2 PR 1: Base Adapter + Mock (20 tests, 46 total) | Claude |
 
 ---
 
 **Last Updated:** 2025-11-07
-**Status:** MVP 87% Complete - VLA Server In Progress
-**Next Milestone:** VLA Server Adapters (Phase 2)
+**Status:** MVP 89% Complete - VLA Server Phase 2 In Progress
+**Next Milestone:** VLA Server Octo-Small Adapter (Phase 2 PR 2)
 **Target MVP Completion:** Week 5

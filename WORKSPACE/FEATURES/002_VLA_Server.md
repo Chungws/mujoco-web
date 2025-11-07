@@ -30,7 +30,7 @@ Independent microservice for executing VLA (Vision-Language-Action) models in Mu
 **What's Included:**
 - ✅ 1 robot (Franka Emika Panda)
 - ✅ 1 scene (Table pick-and-place)
-- ✅ 2 VLA models (OpenVLA 7B, Octo-Base)
+- ✅ 2 VLA models (Octo-Small 27M, SmolVLA 450M)
 - ✅ Adapter pattern (model-specific input/output handling)
 - ✅ Stateless MuJoCo (XML string composition)
 - ✅ Episode execution (max 15 seconds @ 5 Hz = 75 steps)
@@ -58,7 +58,7 @@ VLA Server (per model):
   1. Parse request (robot_id, scene_id, instruction)
   2. Compose MuJoCo XML (robot + scene, stateless)
   3. Create MuJoCo environment (from XML string)
-  4. Get model adapter (OpenVLA or Octo specific)
+  4. Get model adapter (Octo-Small or SmolVLA specific)
   5. Run episode loop (max 15s @ 5 Hz):
      a. Get observation (camera + proprioception)
      b. Adapter preprocessing (model-specific format)
@@ -77,7 +77,7 @@ Response: {actions, states, duration_ms, metadata}
 ```
 ┌────────────────────────────────────────────────────────┐
 │         VLA Server (FastAPI) - Per Model               │
-│         Started with VLA_MODEL_ID=openvla-7b           │
+│         Started with VLA_MODEL_ID=octo-small           │
 │                                                         │
 │  ┌──────────────────────────────────────────────────┐ │
 │  │  API Layer (api/execute.py)                       │ │
@@ -100,13 +100,13 @@ Response: {actions, states, duration_ms, metadata}
 │  │              │  │ - get_adapter(model_id)     │   │
 │  │ - from_xml() │  │                             │   │
 │  │ - step()     │  ├─────────────────────────────┤   │
-│  │ - get_obs()  │  │ OpenVLAAdapter              │   │
+│  │ - get_obs()  │  │ OctoSmallAdapter            │   │
 │  │ - get_state()│  │ - preprocess_obs()          │   │
 │  └──────────────┘  │ - preprocess_instruction()  │   │
 │                    │ - predict()                 │   │
 │  ┌──────────────┐  │ - postprocess_action()      │   │
 │  │ Model Loader │  ├─────────────────────────────┤   │
-│  │ (config/)    │  │ OctoAdapter                 │   │
+│  │ (config/)    │  │ SmolVLAAdapter              │   │
 │  │              │  │ - preprocess_obs()          │   │
 │  │ - get_xml()  │  │ - preprocess_instruction()  │   │
 │  │   (robot+    │  │ - predict()                 │   │
@@ -119,16 +119,16 @@ Response: {actions, states, duration_ms, metadata}
 
 ```
 Backend (config/models.yaml):
-├── openvla-7b → http://localhost:8001
-└── octo-base  → http://localhost:8002
+├── octo-small → http://localhost:8001
+└── smolvla    → http://localhost:8002
 
 VLA Server Instance 1 (Port 8001):
-VLA_MODEL_ID=openvla-7b
-└── Uses OpenVLAAdapter internally
+VLA_MODEL_ID=octo-small
+└── Uses OctoSmallAdapter internally
 
 VLA Server Instance 2 (Port 8002):
-VLA_MODEL_ID=octo-base
-└── Uses OctoAdapter internally
+VLA_MODEL_ID=smolvla
+└── Uses SmolVLAAdapter internally
 ```
 
 ---
@@ -167,8 +167,9 @@ mujoco-web-vla/
     │   ├── adapters/
     │   │   ├── __init__.py           # get_adapter() factory
     │   │   ├── base.py               # VLAModelAdapter ABC
-    │   │   ├── openvla_adapter.py    # OpenVLA specific
-    │   │   └── octo_adapter.py       # Octo specific
+    │   │   ├── mock_adapter.py       # Mock adapter for testing
+    │   │   ├── octo_small_adapter.py # Octo-Small 27M specific
+    │   │   └── smolvla_adapter.py    # SmolVLA 450M specific
     │   │
     │   ├── services/
     │   │   ├── __init__.py
@@ -304,7 +305,7 @@ class Settings(BaseSettings):
     reload: bool = True
 
     # Model (REQUIRED - determines which adapter to use)
-    model_id: str  # "openvla-7b", "octo-base"
+    model_id: str  # "mock", "octo-small", "smolvla"
 
     # Models & Paths
     vla_model_cache: str = "./model_cache"
@@ -1013,9 +1014,10 @@ async def get_server_info():
 - [x] Root config setup (config/mujoco/) ✅ Phase 1
 - [x] XML composition logic (10 tests) ✅ Phase 1
 - [x] Stateless MuJoCo environment (16 tests) ✅ Phase 1
-- [ ] VLA adapter base class (Phase 2)
-- [ ] OpenVLA adapter (10 tests) (Phase 2)
-- [ ] Octo adapter (10 tests) (Phase 2)
+- [x] VLA adapter base class ✅ Phase 2 PR 1
+- [x] Mock adapter (20 tests) ✅ Phase 2 PR 1
+- [ ] Octo-Small adapter (Phase 2 PR 2)
+- [ ] SmolVLA adapter (Phase 2 PR 3)
 
 ### Week 4: Integration & Testing
 - [ ] Execution service with adapters (20 tests)
@@ -1073,12 +1075,15 @@ async def get_server_info():
 ### Starting VLA Servers
 
 ```bash
-# Start OpenVLA server (port 8001)
+# Start Mock server (for testing - no model download)
 cd vla-server
-VLA_MODEL_ID=openvla-7b VLA_PORT=8001 uv run uvicorn vla_server.main:app --reload
+VLA_MODEL_ID=mock VLA_PORT=8001 uv run uvicorn vla_server.main:app --reload
 
-# Start Octo server (port 8002)
-VLA_MODEL_ID=octo-base VLA_PORT=8002 uv run uvicorn vla_server.main:app --reload
+# Start Octo-Small server (port 8001)
+VLA_MODEL_ID=octo-small VLA_PORT=8001 uv run uvicorn vla_server.main:app --reload
+
+# Start SmolVLA server (port 8002)
+VLA_MODEL_ID=smolvla VLA_PORT=8002 uv run uvicorn vla_server.main:app --reload
 ```
 
 ### Testing Endpoints
@@ -1103,11 +1108,14 @@ Backend uses `config/models.yaml` to route requests to appropriate VLA server:
 
 ```yaml
 models:
-  - id: openvla-7b
-    base_url: http://localhost:8001  # OpenVLA server
+  - id: mock
+    base_url: http://localhost:8001  # Mock server (testing)
 
-  - id: octo-base
-    base_url: http://localhost:8002  # Octo server
+  - id: octo-small
+    base_url: http://localhost:8002  # Octo-Small server
+
+  - id: smolvla
+    base_url: http://localhost:8003  # SmolVLA server
 ```
 
 ---
@@ -1119,13 +1127,16 @@ models:
 2. ✅ XML composition works (dynamic robot+scene) - 10 tests passing
 3. ✅ Stateless MuJoCo environment (XML string input) - 16 tests passing
 
-**Phase 2 Remaining (VLA Integration):**
-4. ⏳ Adapter pattern implemented (OpenVLA, Octo)
-5. ⏳ Multi-server deployment works
-6. ⏳ Episodes generated (75 steps @ 5 Hz, 15s)
-7. ⏳ Backend integration successful
-8. ⏳ All tests pass (75 tests target)
-9. ⏳ MacBook compatible (CPU/MPS)
+**Phase 2 In Progress (VLA Integration):**
+4. ✅ Adapter pattern base implemented (VLAModelAdapter ABC)
+5. ✅ Mock adapter implemented (20 tests passing)
+6. ⏳ Octo-Small adapter (Phase 2 PR 2)
+7. ⏳ SmolVLA adapter (Phase 2 PR 3)
+8. ⏳ Multi-server deployment works
+9. ⏳ Episodes generated (75 steps @ 5 Hz, 15s)
+10. ⏳ Backend integration successful
+11. ⏳ All tests pass (75+ tests target)
+12. ⏳ MacBook compatible (CPU/MPS)
 
 ---
 
@@ -1162,6 +1173,6 @@ models:
 ---
 
 **Created:** 2025-01-06
-**Last Updated:** 2025-01-07
-**Status:** Phase 1 Complete - Infrastructure (26 tests passing)
-**Next Phase:** Phase 2 - VLA Adapters (OpenVLA, Octo)
+**Last Updated:** 2025-11-07
+**Status:** Phase 2 PR 1 Complete - Base Adapter + Mock (46 tests passing)
+**Next Phase:** Phase 2 PR 2 - Octo-Small Adapter
