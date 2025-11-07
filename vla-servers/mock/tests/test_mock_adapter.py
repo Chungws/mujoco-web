@@ -4,7 +4,6 @@ Tests for Mock VLA Adapter
 
 import numpy as np
 import pytest
-
 from vla_mock.adapters.mock_adapter import MockVLAAdapter
 
 

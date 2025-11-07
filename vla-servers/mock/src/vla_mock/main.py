@@ -9,7 +9,6 @@ Provides:
 
 from typing import Any
 
-import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from vla_server_base import MuJoCoEnvironment
@@ -65,9 +64,9 @@ async def predict(request: PredictRequest) -> PredictResponse:
         return PredictResponse(action=action)
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/health")
