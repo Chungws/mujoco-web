@@ -6,7 +6,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from vlaarena_shared.config import settings
 from vlaarena_shared.logging_config import setup_logging
 

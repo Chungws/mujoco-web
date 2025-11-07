@@ -20,7 +20,6 @@ from sqlmodel import SQLModel
 from vlaarena_backend.main import app
 from vlaarena_shared.mongodb_models import Episode
 
-
 # Test database URL - SQLite in-memory for isolated, fast tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 

@@ -1,11 +1,12 @@
 # Feature: VLA Execution Server
 
-**Status:** Week 3 - Phase 2 Restructuring (Microservice Architecture)
+**Status:** Week 3-4 - Phase 2 Mock Service Complete
 **Priority:** HIGH
 **Timeline:** Week 3-5 (3 weeks)
 **Target Date:** Week 5 completion
 **Related ADR:** [ADR-003: VLA Server Separation](../ARCHITECTURE/ADR_003-VLA_Server_Separation.md)
 **Phase 1 Progress:** 26/26 tests passing (config + MuJoCo env)
+**Phase 2 Progress:** Mock service complete (13 tests passing) ✅ PR #35
 **Architecture:** Microservice (vla-server-base + independent model services)
 
 ---
@@ -1065,11 +1066,11 @@ async def get_server_info():
 - [x] VLA adapter base class ✅ Phase 2 PR 1
 - [x] Mock adapter (20 tests) ✅ Phase 2 PR 1
 - [ ] **Architecture Restructuring** (Phase 2 Reboot)
-  - [ ] vla-server → vla-server-base (remove ML deps)
-  - [ ] Create vla-servers/ folder
-  - [ ] vla-servers/mock service
+  - [x] vla-server → vla-server-base (remove ML deps) ✅ PR #32
+  - [x] Create vla-servers/ folder ✅ PR #35
+  - [x] vla-servers/mock service ✅ PR #35
   - [ ] vla-servers/octo-small service (Python 3.11)
-  - [ ] Update root workspace config
+  - [x] Update root workspace config ✅ PR #32
 
 ### Week 4: Model Integration & Testing
 - [ ] Each service with FastAPI app
