@@ -4,15 +4,21 @@ Tests for VLA adapters
 Tests:
 - Factory function (get_adapter)
 - MockVLAAdapter implementation
+- OctoSmallAdapter implementation
 - Base adapter interface
 - Error handling
 
-Total: 20 tests
+Total: 30 tests (20 Mock + 10 OctoSmall)
 """
 
 import numpy as np
 import pytest
-from vla_server.adapters import MockVLAAdapter, VLAModelAdapter, get_adapter
+from vla_server.adapters import (
+    MockVLAAdapter,
+    OctoSmallAdapter,
+    VLAModelAdapter,
+    get_adapter,
+)
 
 # ============================================================================
 # Factory Tests (5 tests)
@@ -48,6 +54,13 @@ def test_get_adapter_returns_new_instance_each_time():
     adapter1 = get_adapter("mock")
     adapter2 = get_adapter("mock")
     assert adapter1 is not adapter2
+
+
+def test_get_adapter_returns_octo_small_adapter():
+    """Test that get_adapter('octo-small') returns OctoSmallAdapter"""
+    adapter = get_adapter("octo-small")
+    assert isinstance(adapter, OctoSmallAdapter)
+    assert isinstance(adapter, VLAModelAdapter)
 
 
 # ============================================================================
@@ -259,3 +272,140 @@ def test_mock_adapter_postprocess_action_invalid_shape_raises_error():
     # Test with non-numpy array
     with pytest.raises(ValueError, match="raw_action must be numpy array"):
         adapter.postprocess_action([0.1, 0.2, 0.3])
+
+
+# ============================================================================
+# OctoSmallAdapter Tests (10 tests)
+# ============================================================================
+
+
+def test_octo_small_adapter_initial_state():
+    """Test that OctoSmallAdapter initializes with correct state"""
+    adapter = OctoSmallAdapter()
+    assert adapter.model is None
+    assert adapter.processor is None
+    assert adapter.device is None
+    assert adapter.model_loaded is False
+
+
+def test_octo_small_adapter_load_model_wrong_model_id_raises_error():
+    """Test that load_model raises ValueError for wrong model_id"""
+    adapter = OctoSmallAdapter()
+    with pytest.raises(ValueError, match="Expected model_id='octo-small'"):
+        adapter.load_model("wrong-model", "cpu", "./cache")
+
+
+def test_octo_small_adapter_preprocess_observation_resize_image():
+    """Test that preprocess_observation resizes images to 224x224"""
+    adapter = OctoSmallAdapter()
+
+    # Test with 256x256 image (needs resize)
+    obs = {
+        "image": np.zeros((256, 256, 3), dtype=np.uint8),
+        "qpos": np.array([0.1, 0.2]),
+        "qvel": np.array([0.0, 0.0]),
+    }
+
+    result = adapter.preprocess_observation(obs)
+
+    assert result["image"].shape == (224, 224, 3)
+    assert np.array_equal(result["qpos"], obs["qpos"])
+    assert np.array_equal(result["qvel"], obs["qvel"])
+
+
+def test_octo_small_adapter_preprocess_observation_keeps_224x224():
+    """Test that preprocess_observation keeps 224x224 images as-is"""
+    adapter = OctoSmallAdapter()
+
+    # Test with already correct size
+    obs = {
+        "image": np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8),
+        "qpos": np.array([0.1]),
+        "qvel": np.array([0.0]),
+    }
+
+    result = adapter.preprocess_observation(obs)
+
+    assert result["image"].shape == (224, 224, 3)
+    # Should be the same array since no resize needed
+    assert np.array_equal(result["image"], obs["image"])
+
+
+def test_octo_small_adapter_preprocess_observation_missing_keys_raises_error():
+    """Test that preprocess_observation raises ValueError for missing keys"""
+    adapter = OctoSmallAdapter()
+    obs = {"image": np.zeros((224, 224, 3), dtype=np.uint8)}
+
+    with pytest.raises(ValueError, match="Missing required keys"):
+        adapter.preprocess_observation(obs)
+
+
+def test_octo_small_adapter_preprocess_observation_invalid_image_raises_error():
+    """Test that preprocess_observation validates image format"""
+    adapter = OctoSmallAdapter()
+
+    # Test with non-numpy array
+    obs = {
+        "image": [[0, 0, 0]],  # List instead of numpy array
+        "qpos": np.array([0.1]),
+        "qvel": np.array([0.0]),
+    }
+    with pytest.raises(ValueError, match="image must be numpy array"):
+        adapter.preprocess_observation(obs)
+
+    # Test with wrong shape
+    obs = {
+        "image": np.zeros((224, 224), dtype=np.uint8),  # Missing channel dimension
+        "qpos": np.array([0.1]),
+        "qvel": np.array([0.0]),
+    }
+    with pytest.raises(ValueError, match="image must be"):
+        adapter.preprocess_observation(obs)
+
+
+def test_octo_small_adapter_preprocess_instruction_success():
+    """Test that preprocess_instruction returns instruction as-is"""
+    adapter = OctoSmallAdapter()
+    instruction = "Pick up the red cube"
+    result = adapter.preprocess_instruction(instruction)
+    assert result == instruction
+
+
+def test_octo_small_adapter_preprocess_instruction_empty_raises_error():
+    """Test that preprocess_instruction raises ValueError for empty instruction"""
+    adapter = OctoSmallAdapter()
+
+    with pytest.raises(ValueError, match="instruction cannot be empty"):
+        adapter.preprocess_instruction("")
+
+    with pytest.raises(ValueError, match="instruction cannot be empty"):
+        adapter.preprocess_instruction("   ")
+
+
+def test_octo_small_adapter_postprocess_action_7dim_to_8dim():
+    """Test that postprocess_action pads 7-dim action to 8-dim"""
+    pytest.importorskip("torch")
+    import torch
+
+    adapter = OctoSmallAdapter()
+
+    # Test with 7-dim action (no gripper)
+    raw_action = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7], dtype=torch.float32)
+    result = adapter.postprocess_action(raw_action)
+
+    assert isinstance(result, list)
+    assert len(result) == 8
+    assert result[-1] == 0.0  # Gripper should be padded with 0.0
+    assert all(isinstance(x, float) for x in result)
+
+
+def test_octo_small_adapter_postprocess_action_invalid_type_raises_error():
+    """Test that postprocess_action raises ValueError for non-tensor input"""
+    pytest.importorskip("torch")
+
+    adapter = OctoSmallAdapter()
+
+    # Test with numpy array instead of tensor
+    raw_action = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7], dtype=np.float32)
+    with pytest.raises(ValueError, match=r"raw_action must be torch\.Tensor"):
+        adapter.postprocess_action(raw_action)
