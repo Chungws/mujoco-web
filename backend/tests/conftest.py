@@ -101,10 +101,16 @@ async def mongodb():
         document_models=[Episode],
     )
 
-    yield client
+    yield client.test_db
 
     # Cleanup: Drop database after test
     await client.drop_database("test_db")
+
+
+@pytest_asyncio.fixture(scope="function")
+async def mongodb_database(mongodb):
+    """Alias for mongodb fixture (for compatibility with shared tests)"""
+    return mongodb
 
 
 @pytest_asyncio.fixture(scope="function")
