@@ -4,10 +4,9 @@ Pytest configuration and fixtures for backend tests
 
 import os
 
-# IMPORTANT: Set test database URL and mock LLM BEFORE importing app
+# IMPORTANT: Set test database URL BEFORE importing app
 # Use SQLite in-memory for fast, isolated tests
 os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"
-os.environ["USE_MOCK_LLM"] = "true"
 os.environ["MODELS_CONFIG_PATH"] = "config/models.yaml"  # Relative to backend dir
 
 import pytest_asyncio
@@ -20,13 +19,6 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 from vlaarena_backend.main import app
 from vlaarena_shared.mongodb_models import Episode
-
-# Temporary: Comment out LLM client imports (not needed for VLA Arena MVP)
-# from vlaarena_backend.services.llm_client import (
-#     MockLLMClient,
-#     reset_llm_client,
-#     set_llm_client,
-# )
 
 
 # Test database URL - SQLite in-memory for isolated, fast tests
@@ -69,20 +61,6 @@ async def db():
     # Drop all tables after test
     async with test_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)
-
-
-# Temporary: Comment out use_mock_llm fixture (not needed for VLA Arena MVP)
-# @pytest.fixture(autouse=True)
-# def use_mock_llm():
-#     """
-#     Automatically use mock LLM for all tests
-#
-#     This fixture runs for every test and ensures that tests
-#     don't make real API calls to external LLM providers.
-#     """
-#     set_llm_client(MockLLMClient())
-#     yield
-#     reset_llm_client()  # Clean up after test
 
 
 @pytest_asyncio.fixture(scope="function")

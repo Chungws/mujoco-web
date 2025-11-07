@@ -7,12 +7,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Temporary: Comment out LLM client (not needed for VLA Arena MVP session init)
-# from vlaarena_backend.services.llm_client import (
-#     MockLLMClient,
-#     OpenAILLMClient,
-#     set_llm_client,
-# )
 from vlaarena_shared.config import settings
 from vlaarena_shared.logging_config import setup_logging
 
@@ -26,15 +20,6 @@ logger = setup_logging("vlaarena_backend")
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     logger.info("Starting vlaarena-backend...")
-
-    # Temporary: Comment out LLM client initialization (VLA Arena doesn't need LLM for session init)
-    # # Initialize LLM client based on configuration
-    # if settings.use_mock_llm:
-    #     logger.info("🎭 Using Mock LLM client (development/testing mode)")
-    #     set_llm_client(MockLLMClient())
-    # else:
-    #     logger.info("🚀 Using OpenAI-compatible LLM client (production mode)")
-    #     set_llm_client(OpenAILLMClient())
 
     # TODO: Initialize database connections
     # - MongoDB (Motor)
