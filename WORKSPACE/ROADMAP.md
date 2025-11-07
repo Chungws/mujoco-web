@@ -316,11 +316,17 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ **Total: 128 passing tests (88 backend + 40 worker)**
 
 **Next Up:**
-- VLA Server Development (Week 3-5) - In Progress (45% complete)
+- VLA Server Development (Week 3-5) - **Phase 2 Restructuring** 🔄
   - ✅ Phase 1: Config + MuJoCo Environment (26 tests passing)
   - ✅ Phase 2 PR 1: Base Adapter + Mock (20 tests passing)
-  - ⏭️ Phase 2 PR 2: Octo-Small Adapter (next PR)
-  - ⏭️ Phase 2 PR 3: SmolVLA Adapter
+  - 🔄 **Architecture Restructuring** (In Progress):
+    - Reason: Dependency conflicts (Python 3.11 + TF 2.15 vs Python 3.12 + PyTorch 2.9+)
+    - vla-server → vla-server-base (common library, NO ML deps)
+    - vla-servers/mock (independent service, Python 3.9+)
+    - vla-servers/octo-small (independent service, Python 3.11)
+    - vla-servers/smolvla (independent service, Python 3.12)
+  - ⏭️ Model services with FastAPI apps
+  - ⏭️ Backend integration
 
 ---
 
@@ -479,10 +485,14 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-11-07 | Removed obsolete BACKEND_STATUS.md and FRONTEND_STATUS.md | Claude |
 | 2025-01-07 | VLA Server Phase 1: Config + MuJoCo Environment (26 tests) | Claude |
 | 2025-11-07 | VLA Server Phase 2 PR 1: Base Adapter + Mock (20 tests, 46 total) | Claude |
+| 2025-11-07 | VLA Server Architecture Restructuring Decision | Claude |
+| 2025-11-07 | Microservice architecture: vla-server-base + vla-servers/ | Claude |
+| 2025-11-07 | Updated 002_VLA_Server.md and 001_MVP.md for new architecture | Claude |
 
 ---
 
 **Last Updated:** 2025-11-07
-**Status:** MVP 89% Complete - VLA Server Phase 2 In Progress
-**Next Milestone:** VLA Server Octo-Small Adapter (Phase 2 PR 2)
+**Status:** MVP 89% Complete - VLA Server Phase 2 Restructuring
+**Next Milestone:** Complete microservice architecture (vla-server-base + model services)
+**Architecture Change:** Dependency isolation via independent services
 **Target MVP Completion:** Week 5

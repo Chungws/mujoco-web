@@ -1,17 +1,24 @@
 # Feature: VLA Execution Server
 
-**Status:** Week 3 - Phase 1 Complete (Infrastructure)
+**Status:** Week 3 - Phase 2 Restructuring (Microservice Architecture)
 **Priority:** HIGH
 **Timeline:** Week 3-5 (3 weeks)
 **Target Date:** Week 5 completion
 **Related ADR:** [ADR-003: VLA Server Separation](../ARCHITECTURE/ADR_003-VLA_Server_Separation.md)
 **Phase 1 Progress:** 26/26 tests passing (config + MuJoCo env)
+**Architecture:** Microservice (vla-server-base + independent model services)
 
 ---
 
 ## 📋 Overview
 
-Independent microservice for executing VLA (Vision-Language-Action) models in MuJoCo simulated environments. Each VLA model runs as a separate server instance with model-specific adapters for input/output processing.
+**New Architecture (Phase 2 Restructure):**
+- **vla-server-base**: Lightweight common library (BaseAdapter, MuJoCo wrapper, schemas)
+- **vla-servers/**: Independent model services (mock, octo-small, smolvla)
+- **Dependency Isolation**: Each model service has its own Python version and ML dependencies
+- **Microservice Pattern**: Each model runs as a separate FastAPI service with independent lifecycle
+
+This design solves dependency conflicts (e.g., octo requires Python 3.11 + TensorFlow 2.15, while smolvla needs Python 3.12 + PyTorch 2.9+) by complete isolation.
 
 **Key Features:**
 - Stateless MuJoCo simulation (XML-based, no file system dependency)
@@ -49,16 +56,37 @@ Independent microservice for executing VLA (Vision-Language-Action) models in Mu
 
 ## 🏗️ Architecture
 
+### New Microservice Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Backend (Gateway)                                          │
+│  - Routes requests to model services                        │
+│  - POST /api/vla/execute?model_id=octo-small               │
+└────┬────────────────────────────────────────────────────────┘
+     │
+     ├─→ vla-servers/mock/ (Port 8001, Python 3.9+)
+     │   └─ Uses: vla-server-base (path dependency)
+     │
+     ├─→ vla-servers/octo-small/ (Port 8002, Python 3.11)
+     │   ├─ Uses: vla-server-base (path dependency)
+     │   └─ ML: tensorflow==2.15.0, jax, flax, octo
+     │
+     └─→ vla-servers/smolvla/ (Port 8003, Python 3.12)
+         ├─ Uses: vla-server-base (path dependency)
+         └─ ML: torch>=2.9.0, transformers
+```
+
 ### High-Level Flow
 
 ```
-Backend → HTTP POST /execute (to specific VLA server)
+Backend → HTTP POST /execute (to specific model service)
   ↓
-VLA Server (per model):
+Model Service (e.g., octo-small):
   1. Parse request (robot_id, scene_id, instruction)
-  2. Compose MuJoCo XML (robot + scene, stateless)
-  3. Create MuJoCo environment (from XML string)
-  4. Get model adapter (Octo-Small or SmolVLA specific)
+  2. Compose MuJoCo XML (robot + scene) [from vla-server-base]
+  3. Create MuJoCo environment (from XML string) [from vla-server-base]
+  4. Use model-specific adapter (OctoSmallAdapter)
   5. Run episode loop (max 15s @ 5 Hz):
      a. Get observation (camera + proprioception)
      b. Adapter preprocessing (model-specific format)
@@ -74,135 +102,155 @@ Response: {actions, states, duration_ms, metadata}
 
 ### Component Diagram
 
+#### vla-server-base (Common Library - Workspace Member)
 ```
 ┌────────────────────────────────────────────────────────┐
-│         VLA Server (FastAPI) - Per Model               │
-│         Started with VLA_MODEL_ID=octo-small           │
+│  vla-server-base/  (Python 3.9+, NO ML libs)          │
 │                                                         │
-│  ┌──────────────────────────────────────────────────┐ │
-│  │  API Layer (api/execute.py)                       │ │
-│  │  - POST /execute                                  │ │
-│  │  - GET /health                                    │ │
-│  │  - GET /info (model info)                        │ │
-│  └────────────┬─────────────────────────────────────┘ │
-│               │                                         │
-│  ┌────────────▼─────────────────────────────────────┐ │
-│  │  Execution Service                                │ │
-│  │  (services/execution_service.py)                  │ │
-│  │  - Coordinate MuJoCo + VLA Adapter                │ │
-│  │  - Episode loop management                        │ │
-│  │  - Termination logic                              │ │
-│  └───────┬──────────────┬───────────────────────────┘ │
-│          │              │                              │
-│  ┌───────▼──────┐  ┌───▼─────────────────────────┐   │
-│  │ MuJoCo Env   │  │ VLA Adapter (Factory)       │   │
-│  │ (Stateless)  │  │                             │   │
-│  │              │  │ - get_adapter(model_id)     │   │
-│  │ - from_xml() │  │                             │   │
-│  │ - step()     │  ├─────────────────────────────┤   │
-│  │ - get_obs()  │  │ OctoSmallAdapter            │   │
-│  │ - get_state()│  │ - preprocess_obs()          │   │
-│  └──────────────┘  │ - preprocess_instruction()  │   │
-│                    │ - predict()                 │   │
-│  ┌──────────────┐  │ - postprocess_action()      │   │
-│  │ Model Loader │  ├─────────────────────────────┤   │
-│  │ (config/)    │  │ SmolVLAAdapter              │   │
-│  │              │  │ - preprocess_obs()          │   │
-│  │ - get_xml()  │  │ - preprocess_instruction()  │   │
-│  │   (robot+    │  │ - predict()                 │   │
-│  │    scene)    │  │ - postprocess_action()      │   │
-│  └──────────────┘  └─────────────────────────────┘   │
+│  ├─ base_adapter.py      # VLAModelAdapter ABC        │
+│  ├─ mujoco_env.py        # MuJoCo wrapper             │
+│  ├─ schemas.py           # Common types               │
+│  └─ server_utils.py      # FastAPI helpers            │
+│                                                         │
+│  Dependencies: fastapi, pydantic, mujoco, numpy       │
 └────────────────────────────────────────────────────────┘
 ```
 
-### Multi-Server Architecture
+#### Each Model Service (Independent - NOT Workspace Member)
+```
+┌────────────────────────────────────────────────────────┐
+│  vla-servers/octo-small/  (Python 3.11)                │
+│                                                         │
+│  ├─ src/octo_service/                                  │
+│  │   ├─ adapter.py       # OctoSmallAdapter           │
+│  │   └─ server.py        # FastAPI app                │
+│  │                                                      │
+│  ├─ pyproject.toml                                     │
+│  │   # vla-server-base = { path = "../../vla-server-base" }
+│  │   # tensorflow==2.15.0, jax, flax, octo            │
+│  │                                                      │
+│  └─ uv.lock              # Independent lock file       │
+│                                                         │
+│  API:                                                   │
+│  ├─ POST /predict        # Run inference               │
+│  ├─ GET /health          # Health check                │
+│  └─ GET /info            # Model info                  │
+└────────────────────────────────────────────────────────┘
+```
+
+### Service Communication
 
 ```
 Backend (config/models.yaml):
-├── octo-small → http://localhost:8001
-└── smolvla    → http://localhost:8002
+├── mock       → http://localhost:8001  # Mock service (testing)
+├── octo-small → http://localhost:8002  # Python 3.11
+└── smolvla    → http://localhost:8003  # Python 3.12
 
-VLA Server Instance 1 (Port 8001):
-VLA_MODEL_ID=octo-small
-└── Uses OctoSmallAdapter internally
-
-VLA Server Instance 2 (Port 8002):
-VLA_MODEL_ID=smolvla
-└── Uses SmolVLAAdapter internally
+Each service:
+- Imports vla-server-base via path dependency
+- Has independent Python version & ML dependencies
+- Runs as separate process with own uv.lock
 ```
 
 ---
 
 ## 📦 Project Structure
 
+### New Structure (Microservice Architecture)
+
 ```
-mujoco-web-vla/
-├── config/
-│   ├── models.yaml                    # VLA model endpoints
-│   └── mujoco/
-│       ├── template.xml               # Base MuJoCo template
-│       ├── robots/
-│       │   ├── franka.xml            # Franka robot body
-│       │   └── widowx.xml            # (Future)
-│       └── scenes/
-│           ├── table.xml             # Table scene body
-│           └── kitchen.xml           # (Future)
+mujoco-web/
+├── backend/                   # FastAPI backend (workspace member)
+├── worker/                    # ELO worker (workspace member)
+├── shared/                    # Common schemas (workspace member)
 │
-└── vla-server/
-    ├── src/vla_server/
-    │   ├── __init__.py
-    │   ├── main.py                   # FastAPI app
-    │   │
-    │   ├── config/
-    │   │   ├── __init__.py
-    │   │   ├── settings.py           # Settings (model_id, port, etc.)
-    │   │   └── model_loader.py       # XML composition logic
-    │   │
-    │   ├── api/
-    │   │   ├── __init__.py
-    │   │   ├── execute.py            # POST /execute
-    │   │   ├── health.py             # GET /health
-    │   │   └── info.py               # GET /info
-    │   │
-    │   ├── adapters/
-    │   │   ├── __init__.py           # get_adapter() factory
-    │   │   ├── base.py               # VLAModelAdapter ABC
-    │   │   ├── mock_adapter.py       # Mock adapter for testing
-    │   │   ├── octo_small_adapter.py # Octo-Small 27M specific
-    │   │   └── smolvla_adapter.py    # SmolVLA 450M specific
-    │   │
-    │   ├── services/
-    │   │   ├── __init__.py
-    │   │   ├── execution_service.py  # Main orchestration
-    │   │   └── mujoco_env.py         # Stateless MuJoCo (XML input)
-    │   │
-    │   ├── schemas/
-    │   │   ├── __init__.py
-    │   │   ├── execute.py            # ExecuteRequest/Response
-    │   │   └── common.py             # Shared schemas
-    │   │
-    │   └── utils/
-    │       ├── __init__.py
-    │       └── device.py             # GPU/CPU/MPS detection
-    │
-    ├── tests/
-    │   ├── conftest.py               # Pytest fixtures
-    │   ├── test_model_loader.py      # XML composition tests (10 tests)
-    │   ├── test_mujoco_env.py        # MuJoCo tests (15 tests)
-    │   ├── test_adapters.py          # Adapter tests (20 tests)
-    │   ├── test_execution_service.py # Integration tests (20 tests)
-    │   └── test_execute_api.py       # API tests (10 tests)
-    │
-    ├── model_cache/                  # HuggingFace cache
-    │
-    ├── pyproject.toml                # Dependencies
-    ├── README.md
-    └── .env.example
+├── vla-server-base/          # Common library (workspace member) ⭐
+│   ├── pyproject.toml        # Python 3.9+, NO ML dependencies
+│   │   # dependencies: fastapi, pydantic, mujoco, numpy, pillow
+│   ├── src/vla_server_base/
+│   │   ├── __init__.py
+│   │   ├── base_adapter.py   # VLAModelAdapter ABC
+│   │   ├── mujoco_env.py     # MuJoCo wrapper (stateless)
+│   │   ├── schemas.py        # ObservationDict, ActionList, etc.
+│   │   └── server_utils.py   # FastAPI helpers
+│   └── tests/
+│       ├── test_base_adapter.py
+│       └── test_mujoco_env.py
+│
+├── vla-servers/              # Independent services (NOT workspace) ⭐
+│   ├── mock/                 # Mock service (testing)
+│   │   ├── pyproject.toml    # Python 3.9+
+│   │   │   # vla-server-base = { path = "../../vla-server-base" }
+│   │   ├── src/mock_service/
+│   │   │   ├── adapter.py    # MockVLAAdapter
+│   │   │   └── server.py     # FastAPI app
+│   │   ├── tests/
+│   │   └── uv.lock           # Independent lock
+│   │
+│   ├── octo-small/           # Octo-Small service
+│   │   ├── pyproject.toml    # Python 3.11
+│   │   │   # vla-server-base = { path = "../../vla-server-base" }
+│   │   │   # tensorflow==2.15.0, jax, flax, octo, dlimp
+│   │   ├── src/octo_service/
+│   │   │   ├── adapter.py    # OctoSmallAdapter
+│   │   │   └── server.py     # FastAPI app
+│   │   ├── tests/
+│   │   │   └── test_adapter.py
+│   │   └── uv.lock           # Independent lock
+│   │
+│   └── smolvla/              # SmolVLA service (Phase 3)
+│       ├── pyproject.toml    # Python 3.12
+│       │   # vla-server-base = { path = "../../vla-server-base" }
+│       │   # torch>=2.9.0, transformers
+│       └── ...
+│
+├── config/
+│   ├── models.yaml           # VLA service endpoints
+│   └── mujoco/
+│       ├── template.xml
+│       ├── robots/
+│       │   └── franka.xml
+│       └── scenes/
+│           └── table.xml
+│
+└── pyproject.toml            # Root workspace
+    # [tool.uv.workspace]
+    # members = ["backend", "worker", "shared", "vla-server-base"]
+    # exclude = ["vla-servers/*"]
 ```
+
+### Python Version Policy
+
+| Package | Python Version | Reason |
+|---------|---------------|--------|
+| vla-server-base | `>=3.9` | Maximum compatibility |
+| mock service | `>=3.9` | Maximum compatibility |
+| octo-small service | `>=3.11,<3.12` | TensorFlow 2.15.0 constraint |
+| smolvla service | `>=3.12` | Latest features, PyTorch 2.9+ |
 
 ---
 
 ## 🔧 Implementation Guide
+
+### Overview of New Implementation
+
+**Phase 1: vla-server-base (Common Library)**
+1. Create vla-server-base as workspace member
+2. Implement BaseAdapter, MuJoCo wrapper, schemas
+3. NO ML dependencies (lightweight!)
+
+**Phase 2: Independent Model Services**
+1. Create vla-servers/mock (testing)
+2. Create vla-servers/octo-small (Python 3.11)
+3. Create vla-servers/smolvla (Python 3.12, Phase 3)
+
+**Each service:**
+- path dependency to vla-server-base
+- Own pyproject.toml with specific Python version
+- Own uv.lock (independent dependencies)
+- FastAPI app with /predict, /health, /info endpoints
+
+---
 
 ### Step 1: Root Config Setup
 
@@ -1010,23 +1058,28 @@ async def get_server_info():
 
 ## 📅 Implementation Timeline
 
-### Week 3: Core Infrastructure
+### Week 3: Infrastructure + Restructuring
 - [x] Root config setup (config/mujoco/) ✅ Phase 1
 - [x] XML composition logic (10 tests) ✅ Phase 1
 - [x] Stateless MuJoCo environment (16 tests) ✅ Phase 1
 - [x] VLA adapter base class ✅ Phase 2 PR 1
 - [x] Mock adapter (20 tests) ✅ Phase 2 PR 1
-- [ ] Octo-Small adapter (Phase 2 PR 2)
-- [ ] SmolVLA adapter (Phase 2 PR 3)
+- [ ] **Architecture Restructuring** (Phase 2 Reboot)
+  - [ ] vla-server → vla-server-base (remove ML deps)
+  - [ ] Create vla-servers/ folder
+  - [ ] vla-servers/mock service
+  - [ ] vla-servers/octo-small service (Python 3.11)
+  - [ ] Update root workspace config
 
-### Week 4: Integration & Testing
-- [ ] Execution service with adapters (20 tests)
-- [ ] API endpoints (10 tests)
-- [ ] Full integration tests
-- [ ] Multi-server testing (2 instances)
-- [ ] Error handling
+### Week 4: Model Integration & Testing
+- [ ] Each service with FastAPI app
+- [ ] Complete OctoSmallAdapter implementation
+- [ ] Service-specific tests (per service)
+- [ ] Multi-service testing (mock + octo-small)
+- [ ] Error handling & validation
 
-### Week 5: Optimization & Documentation
+### Week 5: SmolVLA & Optimization
+- [ ] vla-servers/smolvla service (Python 3.12)
 - [ ] Performance tuning
 - [ ] Model caching optimization
 - [ ] API documentation (OpenAPI)
@@ -1072,34 +1125,47 @@ async def get_server_info():
 
 ## 🚀 Deployment
 
-### Starting VLA Servers
+### Starting VLA Services (New Architecture)
 
 ```bash
-# Start Mock server (for testing - no model download)
-cd vla-server
-VLA_MODEL_ID=mock VLA_PORT=8001 uv run uvicorn vla_server.main:app --reload
+# Start Mock service (port 8001)
+cd vla-servers/mock
+uv sync
+uv run uvicorn mock_service.server:app --port 8001 --reload
 
-# Start Octo-Small server (port 8001)
-VLA_MODEL_ID=octo-small VLA_PORT=8001 uv run uvicorn vla_server.main:app --reload
+# Start Octo-Small service (port 8002, Python 3.11 required)
+cd vla-servers/octo-small
+uv sync  # Installs tensorflow 2.15.0, jax, octo in Python 3.11
+uv run uvicorn octo_service.server:app --port 8002 --reload
 
-# Start SmolVLA server (port 8002)
-VLA_MODEL_ID=smolvla VLA_PORT=8002 uv run uvicorn vla_server.main:app --reload
+# Start SmolVLA service (port 8003, Python 3.12)
+cd vla-servers/smolvla
+uv sync  # Installs torch 2.9+, transformers
+uv run uvicorn smolvla_service.server:app --port 8003 --reload
 ```
 
 ### Testing Endpoints
 
 ```bash
-# Test OpenVLA server
-curl -X POST http://localhost:8001/execute \
+# Test Mock service
+curl -X POST http://localhost:8001/predict \
   -H "Content-Type: application/json" \
   -d '{
-    "robot_id": "franka",
-    "scene_id": "table",
+    "obs": {"image": [...], "qpos": [...], "qvel": [...]},
     "instruction": "Pick up the red cube"
   }'
 
-# Get server info
+# Test Octo-Small service
+curl -X POST http://localhost:8002/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "obs": {"image": [...], "qpos": [...], "qvel": [...]},
+    "instruction": "Pick up the red cube"
+  }'
+
+# Get service info
 curl http://localhost:8001/info
+curl http://localhost:8002/info
 ```
 
 ### Backend Integration
@@ -1173,6 +1239,11 @@ models:
 ---
 
 **Created:** 2025-01-06
-**Last Updated:** 2025-11-07
-**Status:** Phase 2 PR 1 Complete - Base Adapter + Mock (46 tests passing)
-**Next Phase:** Phase 2 PR 2 - Octo-Small Adapter
+**Last Updated:** 2025-11-07 (Architecture Restructuring)
+**Status:** Phase 2 Restructuring - Microservice Architecture
+**Architecture Change:** vla-server → vla-server-base + vla-servers/ (independent services)
+**Reason:** Dependency isolation (Python 3.11 + TF 2.15 vs Python 3.12 + PyTorch 2.9+)
+**Next Phase:**
+- Create vla-server-base (common library)
+- Create vla-servers/mock
+- Create vla-servers/octo-small (Python 3.11)
