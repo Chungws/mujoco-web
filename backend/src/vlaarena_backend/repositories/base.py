@@ -2,12 +2,11 @@
 Base repository pattern for database operations
 """
 
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Generic, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel
-
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
@@ -20,7 +19,7 @@ class BaseRepository(Generic[ModelType]):
     and provide a clean interface for data access.
     """
 
-    def __init__(self, model: Type[ModelType], db: AsyncSession):
+    def __init__(self, model: type[ModelType], db: AsyncSession):
         """
         Initialize repository
 
@@ -46,7 +45,7 @@ class BaseRepository(Generic[ModelType]):
         await self.db.refresh(obj)
         return obj
 
-    async def get(self, id: int) -> Optional[ModelType]:
+    async def get(self, id: int) -> ModelType | None:
         """
         Get record by ID
 
@@ -58,7 +57,7 @@ class BaseRepository(Generic[ModelType]):
         """
         return await self.db.get(self.model, id)
 
-    async def get_by_field(self, field_name: str, value: any) -> Optional[ModelType]:
+    async def get_by_field(self, field_name: str, value: any) -> ModelType | None:
         """
         Get single record by field value
 
@@ -73,7 +72,7 @@ class BaseRepository(Generic[ModelType]):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def list_all(self, limit: Optional[int] = None) -> List[ModelType]:
+    async def list_all(self, limit: int | None = None) -> list[ModelType]:
         """
         List all records
 

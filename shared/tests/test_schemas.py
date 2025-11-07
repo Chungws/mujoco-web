@@ -6,7 +6,6 @@ Following TDD workflow: Red → Green → Refactor
 import pytest
 from pydantic import ValidationError
 from vlaarena_shared.schemas import (
-    EpisodeMetrics,
     EpisodeResponse,
     EpisodeState,
     LeaderboardResponse,
@@ -182,23 +181,6 @@ class TestEpisodeSchemas:
         assert state.qvel == [0.01, 0.02, 0.03]
         assert state.time == 0.0
 
-    def test_episode_metrics_valid(self):
-        """Test EpisodeMetrics with valid data"""
-        # Arrange & Act
-        data = {
-            "success": True,
-            "total_steps": 35,
-            "max_steps": 50,
-            "final_distance_to_goal": 0.05,
-        }
-        metrics = EpisodeMetrics(**data)
-
-        # Assert
-        assert metrics.success is True
-        assert metrics.total_steps == 35
-        assert metrics.max_steps == 50
-        assert metrics.final_distance_to_goal == 0.05
-
     def test_episode_response_valid(self):
         """Test EpisodeResponse with valid data"""
         # Arrange
@@ -209,12 +191,6 @@ class TestEpisodeSchemas:
                 {"qpos": [0.1, 0.2], "qvel": [0.01, 0.02], "time": 0.0},
                 {"qpos": [0.2, 0.3], "qvel": [0.02, 0.03], "time": 0.1},
             ],
-            "metrics": {
-                "success": True,
-                "total_steps": 2,
-                "max_steps": 50,
-                "final_distance_to_goal": 0.05,
-            },
         }
 
         # Act
@@ -224,8 +200,6 @@ class TestEpisodeSchemas:
         assert response.episode_id == "ep_left_123"
         assert len(response.actions) == 1
         assert len(response.states) == 2
-        assert response.metrics.success is True
-        assert response.metrics.total_steps == 2
 
     def test_episode_response_empty_actions(self):
         """Test EpisodeResponse with empty actions list"""
@@ -234,12 +208,6 @@ class TestEpisodeSchemas:
             "episode_id": "ep_123",
             "actions": [],
             "states": [],
-            "metrics": {
-                "success": False,
-                "total_steps": 0,
-                "max_steps": 50,
-                "final_distance_to_goal": 1.0,
-            },
         }
 
         # Act

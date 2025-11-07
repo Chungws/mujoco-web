@@ -6,11 +6,10 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from vlaarena_shared.schemas import SessionInitRequest, SessionResponse
 
 from vlaarena_backend.database import get_db
 from vlaarena_backend.services.session_service import init_session
-from vlaarena_shared.schemas import SessionInitRequest, SessionResponse
-
 
 logger = logging.getLogger(__name__)
 
@@ -54,5 +53,5 @@ async def initialize_session(
         logger.error(f"Failed to initialize session: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to initialize session: {str(e)}",
-        )
+            detail=f"Failed to initialize session: {e!s}",
+        ) from e

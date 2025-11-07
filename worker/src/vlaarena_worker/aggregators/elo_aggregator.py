@@ -16,11 +16,9 @@ Workflow:
 
 import logging
 from datetime import UTC, datetime
-from typing import Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-
 from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal, Vote
 
 from .elo_calculator import (
@@ -29,7 +27,6 @@ from .elo_calculator import (
     calculate_elo,
     get_score_from_vote,
 )
-
 
 logger = logging.getLogger("vlaarena_worker.elo_aggregator")
 
@@ -44,7 +41,7 @@ class ELOAggregator:
     def __init__(
         self,
         session: AsyncSession,
-        model_configs: Optional[Dict[str, Dict[str, str]]] = None,
+        model_configs: dict[str, dict[str, str]] | None = None,
     ):
         """
         Initialize ELO aggregator

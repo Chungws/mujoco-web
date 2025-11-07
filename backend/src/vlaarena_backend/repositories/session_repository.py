@@ -2,11 +2,8 @@
 Session repository for database operations
 """
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_shared.models import Session
 
 from .base import BaseRepository
@@ -18,7 +15,7 @@ class SessionRepository(BaseRepository[Session]):
     def __init__(self, db: AsyncSession):
         super().__init__(Session, db)
 
-    async def get_by_session_id(self, session_id: str) -> Optional[Session]:
+    async def get_by_session_id(self, session_id: str) -> Session | None:
         """
         Get session by session_id string
 
@@ -31,7 +28,7 @@ class SessionRepository(BaseRepository[Session]):
         return await self.get_by_field("session_id", session_id)
 
     async def get_by_user_id(
-        self, user_id: str, limit: Optional[int] = None, offset: Optional[int] = None
+        self, user_id: str, limit: int | None = None, offset: int | None = None
     ) -> list[Session]:
         """
         Get all sessions for a user

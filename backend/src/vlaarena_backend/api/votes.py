@@ -5,11 +5,10 @@ Following FastAPI 4-layer pattern: schemas → service → router
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from vlaarena_shared.schemas import VoteRequest, VoteResponse
 
 from vlaarena_backend.database import get_db
 from vlaarena_backend.services.votes_service import create_vote
-from vlaarena_shared.schemas import VoteRequest, VoteResponse
-
 
 router = APIRouter()
 

@@ -9,7 +9,6 @@ Following TDD workflow:
 
 import pytest
 from fastapi.testclient import TestClient
-
 from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal
 
 

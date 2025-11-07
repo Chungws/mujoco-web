@@ -8,9 +8,8 @@ from .battle_repository import BattleRepository
 from .session_repository import SessionRepository
 from .vote_repository import VoteRepository
 
-
 __all__ = [
-    "SessionRepository",
     "BattleRepository",
+    "SessionRepository",
     "VoteRepository",
 ]

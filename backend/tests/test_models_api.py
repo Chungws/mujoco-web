@@ -5,7 +5,6 @@ Tests for model management API endpoints
 from unittest.mock import Mock
 
 from fastapi.testclient import TestClient
-
 from vlaarena_backend.main import app
 from vlaarena_backend.services.model_service import get_model_service
 

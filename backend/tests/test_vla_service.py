@@ -164,7 +164,7 @@ class TestMockVLAService:
 
         # Check that at least one action differs
         different = False
-        for a1, a2 in zip(actions_1, actions_2):
+        for a1, a2 in zip(actions_1, actions_2, strict=False):
             if a1 != a2:
                 different = True
                 break

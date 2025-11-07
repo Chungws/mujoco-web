@@ -11,13 +11,11 @@ from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-
 from vlaarena_shared.models import Battle, Session, Turn
 from vlaarena_shared.mongodb_models import Episode, State
 from vlaarena_shared.schemas import TurnRequest, TurnResponse
 
 from .vla_service import MockVLAService
-
 
 logger = logging.getLogger(__name__)
 

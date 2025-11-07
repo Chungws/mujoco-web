@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 
 import pytest
 from sqlmodel import select
-
 from vlaarena_shared.models import Vote, WorkerStatus
 from vlaarena_worker.main import run_aggregation
 

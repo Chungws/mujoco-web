@@ -3,14 +3,12 @@ Episode repository for MongoDB operations using Beanie ODM
 """
 
 import logging
-from typing import Optional
 
 from pydantic import ValidationError
 from pymongo.errors import ConnectionFailure, OperationFailure, ServerSelectionTimeoutError
-
-from vlaarena_backend.exceptions import EpisodeDatabaseError, EpisodeValidationError
 from vlaarena_shared.mongodb_models import Episode
 
+from vlaarena_backend.exceptions import EpisodeDatabaseError, EpisodeValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ class EpisodeRepository:
     """
 
     @staticmethod
-    async def get_by_episode_id(episode_id: str) -> Optional[Episode]:
+    async def get_by_episode_id(episode_id: str) -> Episode | None:
         """
         Get episode by episode_id
 
@@ -42,13 +40,13 @@ class EpisodeRepository:
             return await Episode.find_one(Episode.episode_id == episode_id)
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             logger.error(f"MongoDB connection error while fetching episode {episode_id}: {e}")
-            raise EpisodeDatabaseError("get_by_episode_id", e)
+            raise EpisodeDatabaseError("get_by_episode_id", e) from e
         except OperationFailure as e:
             logger.error(f"MongoDB operation error while fetching episode {episode_id}: {e}")
-            raise EpisodeDatabaseError("get_by_episode_id", e)
+            raise EpisodeDatabaseError("get_by_episode_id", e) from e
         except Exception as e:
             logger.error(f"Unexpected error while fetching episode {episode_id}: {e}")
-            raise EpisodeDatabaseError("get_by_episode_id", e)
+            raise EpisodeDatabaseError("get_by_episode_id", e) from e
 
     @staticmethod
     async def create(episode: Episode) -> Episode:
@@ -69,20 +67,20 @@ class EpisodeRepository:
             return await episode.insert()
         except ValidationError as e:
             logger.error(f"Validation error while creating episode {episode.episode_id}: {e}")
-            raise EpisodeValidationError(episode.episode_id, e)
+            raise EpisodeValidationError(episode.episode_id, e) from e
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             logger.error(
                 f"MongoDB connection error while creating episode {episode.episode_id}: {e}"
             )
-            raise EpisodeDatabaseError("create", e)
+            raise EpisodeDatabaseError("create", e) from e
         except OperationFailure as e:
             logger.error(
                 f"MongoDB operation error while creating episode {episode.episode_id}: {e}"
             )
-            raise EpisodeDatabaseError("create", e)
+            raise EpisodeDatabaseError("create", e) from e
         except Exception as e:
             logger.error(f"Unexpected error while creating episode {episode.episode_id}: {e}")
-            raise EpisodeDatabaseError("create", e)
+            raise EpisodeDatabaseError("create", e) from e
 
     @staticmethod
     async def get_by_turn_id(turn_id: str) -> list[Episode]:
@@ -104,13 +102,13 @@ class EpisodeRepository:
             logger.error(
                 f"MongoDB connection error while fetching episodes for turn {turn_id}: {e}"
             )
-            raise EpisodeDatabaseError("get_by_turn_id", e)
+            raise EpisodeDatabaseError("get_by_turn_id", e) from e
         except OperationFailure as e:
             logger.error(f"MongoDB operation error while fetching episodes for turn {turn_id}: {e}")
-            raise EpisodeDatabaseError("get_by_turn_id", e)
+            raise EpisodeDatabaseError("get_by_turn_id", e) from e
         except Exception as e:
             logger.error(f"Unexpected error while fetching episodes for turn {turn_id}: {e}")
-            raise EpisodeDatabaseError("get_by_turn_id", e)
+            raise EpisodeDatabaseError("get_by_turn_id", e) from e
 
     @staticmethod
     async def get_by_battle_id(battle_id: str) -> list[Episode]:
@@ -132,12 +130,12 @@ class EpisodeRepository:
             logger.error(
                 f"MongoDB connection error while fetching episodes for battle {battle_id}: {e}"
             )
-            raise EpisodeDatabaseError("get_by_battle_id", e)
+            raise EpisodeDatabaseError("get_by_battle_id", e) from e
         except OperationFailure as e:
             logger.error(
                 f"MongoDB operation error while fetching episodes for battle {battle_id}: {e}"
             )
-            raise EpisodeDatabaseError("get_by_battle_id", e)
+            raise EpisodeDatabaseError("get_by_battle_id", e) from e
         except Exception as e:
             logger.error(f"Unexpected error while fetching episodes for battle {battle_id}: {e}")
-            raise EpisodeDatabaseError("get_by_battle_id", e)
+            raise EpisodeDatabaseError("get_by_battle_id", e) from e

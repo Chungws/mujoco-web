@@ -12,11 +12,10 @@ from vlaarena_shared.database import (
 )
 from vlaarena_shared.database import get_backend_db as get_db
 
-
 __all__ = [
-    "engine",
     "async_session_maker",
-    "get_db",
     "create_db_and_tables",
     "drop_db_and_tables",
+    "engine",
+    "get_db",
 ]

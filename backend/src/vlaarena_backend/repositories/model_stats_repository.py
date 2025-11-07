@@ -2,11 +2,8 @@
 ModelStats repository for leaderboard data access (robot-specific + global)
 """
 
-from typing import List, Optional
-
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from vlaarena_shared.models import ModelStatsByRobot, ModelStatsTotal
 
 from .base import BaseRepository
@@ -21,8 +18,8 @@ class ModelStatsRepository(BaseRepository[ModelStatsTotal]):
     async def get_leaderboard(
         self,
         min_vote_count: int = 5,
-        robot_id: Optional[str] = None,
-    ) -> List[ModelStatsByRobot | ModelStatsTotal]:
+        robot_id: str | None = None,
+    ) -> list[ModelStatsByRobot | ModelStatsTotal]:
         """
         Get leaderboard models sorted by ELO score
 
@@ -55,7 +52,7 @@ class ModelStatsRepository(BaseRepository[ModelStatsTotal]):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_total_votes(self, min_vote_count: int = 5, robot_id: Optional[str] = None) -> int:
+    async def get_total_votes(self, min_vote_count: int = 5, robot_id: str | None = None) -> int:
         """
         Get total number of votes across all models meeting minimum threshold
 
@@ -84,7 +81,7 @@ class ModelStatsRepository(BaseRepository[ModelStatsTotal]):
 
     async def get_model_stats_by_robot(
         self, model_id: str, robot_id: str
-    ) -> Optional[ModelStatsByRobot]:
+    ) -> ModelStatsByRobot | None:
         """
         Get robot-specific model statistics
 
@@ -102,7 +99,7 @@ class ModelStatsRepository(BaseRepository[ModelStatsTotal]):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_model_stats_total(self, model_id: str) -> Optional[ModelStatsTotal]:
+    async def get_model_stats_total(self, model_id: str) -> ModelStatsTotal | None:
         """
         Get global model statistics
 

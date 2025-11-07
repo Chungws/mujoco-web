@@ -6,13 +6,10 @@ import logging
 import os
 import random
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import yaml
-
 from vlaarena_shared.config import settings
 from vlaarena_shared.schemas import ModelInfo
-
 
 logger = logging.getLogger(__name__)
 
@@ -24,18 +21,18 @@ class ModelConfig:
     Loaded from config/models.yaml
     """
 
-    def __init__(self, config_dict: Dict):
+    def __init__(self, config_dict: dict):
         self.id: str = config_dict["id"]
         self.name: str = config_dict["name"]
         self.model: str = config_dict["model"]
         self.base_url: str = config_dict["base_url"]
-        self.api_key_env: Optional[str] = config_dict.get("api_key_env")
+        self.api_key_env: str | None = config_dict.get("api_key_env")
         self.organization: str = config_dict["organization"]
         self.license: str = config_dict["license"]
         self.status: str = config_dict.get("status", "active")
 
     @property
-    def api_key(self) -> Optional[str]:
+    def api_key(self) -> str | None:
         """
         Resolve API key from environment variable
 
@@ -68,7 +65,7 @@ class ModelService:
     Loads and manages model configurations from YAML file
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """
         Initialize model service
 
@@ -76,7 +73,7 @@ class ModelService:
             config_path: Path to models.yaml (defaults to settings.models_config_path)
         """
         self.config_path = Path(config_path or settings.models_config_path)
-        self.models: Dict[str, ModelConfig] = {}
+        self.models: dict[str, ModelConfig] = {}
         self._load_models()
 
     def _load_models(self) -> None:
@@ -92,7 +89,7 @@ class ModelService:
 
         logger.info(f"Loading model config from {self.config_path}")
 
-        with open(self.config_path, "r", encoding="utf-8") as f:
+        with open(self.config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
         if not config or "models" not in config:
@@ -104,7 +101,7 @@ class ModelService:
 
         logger.info(f"Loaded {len(self.models)} models: {list(self.models.keys())}")
 
-    def get_model(self, model_id: str) -> Optional[ModelConfig]:
+    def get_model(self, model_id: str) -> ModelConfig | None:
         """
         Get model configuration by ID
 
@@ -116,7 +113,7 @@ class ModelService:
         """
         return self.models.get(model_id)
 
-    def get_active_models(self) -> List[ModelConfig]:
+    def get_active_models(self) -> list[ModelConfig]:
         """
         Get all active models
 
@@ -125,7 +122,7 @@ class ModelService:
         """
         return [m for m in self.models.values() if m.status == "active"]
 
-    def list_models(self) -> List[ModelInfo]:
+    def list_models(self) -> list[ModelInfo]:
         """
         List all active models (for GET /api/models)
 
@@ -135,7 +132,7 @@ class ModelService:
         active_models = self.get_active_models()
         return [m.to_model_info() for m in active_models]
 
-    def select_models_for_battle(self) -> Tuple[ModelConfig, ModelConfig]:
+    def select_models_for_battle(self) -> tuple[ModelConfig, ModelConfig]:
         """
         Select 2 random models for battle
 
@@ -164,7 +161,7 @@ class ModelService:
 
 
 # Singleton instance
-_model_service: Optional[ModelService] = None
+_model_service: ModelService | None = None
 
 
 def get_model_service() -> ModelService:
