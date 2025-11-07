@@ -1015,8 +1015,8 @@ async def get_server_info():
 - [x] XML composition logic (10 tests) ✅ Phase 1
 - [x] Stateless MuJoCo environment (16 tests) ✅ Phase 1
 - [x] VLA adapter base class ✅ Phase 2 PR 1
-- [x] Mock adapter (20 tests) ✅ Phase 2 PR 1
-- [ ] Octo-Small adapter (Phase 2 PR 2)
+- [x] Mock adapter (21 tests) ✅ Phase 2 PR 1
+- [x] Octo-Small adapter (10 tests) ✅ Phase 2 PR 2
 - [ ] SmolVLA adapter (Phase 2 PR 3)
 
 ### Week 4: Integration & Testing
@@ -1129,8 +1129,8 @@ models:
 
 **Phase 2 In Progress (VLA Integration):**
 4. ✅ Adapter pattern base implemented (VLAModelAdapter ABC)
-5. ✅ Mock adapter implemented (20 tests passing)
-6. ⏳ Octo-Small adapter (Phase 2 PR 2)
+5. ✅ Mock adapter implemented (21 tests passing)
+6. ✅ Octo-Small adapter implemented (10 tests passing) ✅ Phase 2 PR 2
 7. ⏳ SmolVLA adapter (Phase 2 PR 3)
 8. ⏳ Multi-server deployment works
 9. ⏳ Episodes generated (75 steps @ 5 Hz, 15s)
@@ -1174,5 +1174,5 @@ models:
 
 **Created:** 2025-01-06
 **Last Updated:** 2025-11-07
-**Status:** Phase 2 PR 1 Complete - Base Adapter + Mock (46 tests passing)
-**Next Phase:** Phase 2 PR 2 - Octo-Small Adapter
+**Status:** Phase 2 PR 2 Complete - Octo-Small Adapter (57 tests passing)
+**Next Phase:** Phase 2 PR 3 - SmolVLA Adapter
