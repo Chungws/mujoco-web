@@ -316,16 +316,16 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ **Total: 128 passing tests (88 backend + 40 worker)**
 
 **Next Up:**
-- VLA Server Development (Week 3-5) - **Phase 2 Restructuring** 🔄
-  - ✅ Phase 1: Config + MuJoCo Environment (26 tests passing)
-  - ✅ Phase 2 PR 1: Base Adapter + Mock (20 tests passing)
-  - 🔄 **Architecture Restructuring** (In Progress):
+- VLA Server Development (Week 3-5) - **Phase 2 Mock Service Complete** ✅
+  - ✅ Phase 1: Config + MuJoCo Environment (26 tests passing) - PR #31, #32, #33
+  - ✅ Phase 2: Mock Service (13 tests passing) - PR #35
+  - ✅ **Architecture Restructuring Complete**:
     - Reason: Dependency conflicts (Python 3.11 + TF 2.15 vs Python 3.12 + PyTorch 2.9+)
-    - vla-server → vla-server-base (common library, NO ML deps)
-    - vla-servers/mock (independent service, Python 3.9+)
-    - vla-servers/octo-small (independent service, Python 3.11)
-    - vla-servers/smolvla (independent service, Python 3.12)
-  - ⏭️ Model services with FastAPI apps
+    - ✅ vla-server → vla-server-base (common library, NO ML deps) - PR #32
+    - ✅ vla-servers/mock (independent service, Python 3.12) - PR #35
+    - ⏭️ vla-servers/octo-small (independent service, Python 3.11)
+    - ⏭️ vla-servers/smolvla (independent service, Python 3.12)
+  - ⏭️ Model services with real VLA models
   - ⏭️ Backend integration
 
 ---
