@@ -7,7 +7,7 @@ FastAPI service for Octo-Small (27M parameters) VLA model inference.
 This service provides HTTP API for Octo-Small model predictions:
 - **Model**: `hf://rail-berkeley/octo-small-1.5` (27M params)
 - **Framework**: JAX 0.4.20
-- **Python**: 3.10-3.11
+- **Python**: 3.10
 - **Performance**: ~17 it/sec on NVIDIA 4090
 
 ## Architecture
@@ -23,23 +23,10 @@ Uses microservice pattern with:
 cd vla-servers/octo-small
 
 # Development (CPU only)
-uv sync
+uv sync --extra cpu
 
-# GPU support (CUDA 12)
-uv sync --extra cuda12
-
-# GPU support (CUDA 13)
-uv sync --extra cuda13
-```
-
-### Manual GPU Installation (Alternative)
-
-If you need a specific CUDA version:
-
-```bash
-# After uv sync, install JAX with CUDA manually
-pip install --upgrade "jax[cuda12]"  # CUDA 12
-pip install --upgrade "jax[cuda13]"  # CUDA 13
+# GPU support (CUDA 11)
+uv sync --extra cuda11
 ```
 
 ### Verify GPU Detection
