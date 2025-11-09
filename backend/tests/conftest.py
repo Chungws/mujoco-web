@@ -9,9 +9,14 @@ import os
 os.environ["POSTGRES_URI"] = "sqlite+aiosqlite:///:memory:"
 os.environ["MODELS_CONFIG_PATH"] = "config/models.yaml"  # Relative to backend dir
 
+import random
+
+import pytest
 import pytest_asyncio
+import respx
 from beanie import init_beanie
 from fastapi.testclient import TestClient
+from httpx import Response
 from mongomock_motor import AsyncMongoMockClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -90,12 +95,65 @@ async def mongodb_database(mongodb):
     return mongodb
 
 
+def _generate_mock_episode_response(model_id: str, instruction: str) -> dict:
+    """
+    Generate mock VLA episode response
+
+    Simulates the response from VLA servers (/predict endpoint)
+    Used for HTTP mocking in unit tests.
+    """
+    # Use model-specific seed for deterministic but different behavior
+    model_seeds = {"openvla-7b": 42, "octo-base": 123, "mock-vla": 0, "octo-small": 456}
+    seed = model_seeds.get(model_id, 0)
+    seed += hash(instruction) % 1000
+    random.seed(seed)
+
+    # Generate variable length episode (20-50 steps)
+    num_steps = random.randint(20, 50)
+
+    # Generate 8-dim actions
+    actions = [[random.uniform(-0.1, 0.1) for _ in range(8)] for _ in range(num_steps)]
+
+    # Generate states (qpos, qvel, time)
+    states = []
+    for step in range(num_steps):
+        qpos = [random.uniform(-1.0, 1.0) for _ in range(7)]
+        qvel = [random.uniform(-0.5, 0.5) for _ in range(7)]
+        states.append({"qpos": qpos, "qvel": qvel, "time": step * 0.1})
+
+    return {"actions": actions, "states": states, "duration_ms": random.randint(100, 500)}
+
+
+@pytest.fixture
+def mock_vla_http():
+    """
+    Fixture to mock VLA server HTTP responses
+
+    Mocks all POST requests to */predict endpoints with realistic episode data.
+    This allows unit tests to run without actual VLA servers running.
+    """
+    with respx.mock:
+        # Mock all VLA server predict endpoints
+        route = respx.post(url__regex=r".*\/predict$").mock(
+            side_effect=lambda request: Response(
+                200,
+                json=_generate_mock_episode_response(
+                    model_id="mock",  # Default model_id
+                    instruction=request.content.decode() if request.content else "Pick up the cube",
+                ),
+            )
+        )
+        yield route
+
+
 @pytest_asyncio.fixture(scope="function")
-async def client(mongodb):
+async def client(mongodb, mock_vla_http):
     """Test client for FastAPI app with in-memory SQLite database
 
     Each test gets a fresh in-memory database that is automatically
     destroyed when the test completes. No cleanup needed!
+
+    Uses mock_vla_http to mock VLA server HTTP responses.
     """
     # Create all tables in in-memory DB
     async with test_engine.begin() as conn:

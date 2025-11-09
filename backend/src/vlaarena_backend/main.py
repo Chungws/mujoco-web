@@ -20,6 +20,17 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     logger.info("Starting vlaarena-backend...")
 
+    # Initialize VLA service client
+    from vlaarena_backend.dependencies import initialize_vla_client
+
+    try:
+        initialize_vla_client()
+        logger.info("VLA client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize VLA client: {e}")
+        # Continue startup even if VLA client fails (for development)
+        # In production, you may want to fail startup here
+
     # TODO: Initialize database connections
     # - MongoDB (Motor)
     # - PostgreSQL (SQLAlchemy async)

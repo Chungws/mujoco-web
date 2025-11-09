@@ -15,7 +15,7 @@ from vlaarena_shared.models import Battle, Session, Turn
 from vlaarena_shared.mongodb_models import Episode, State
 from vlaarena_shared.schemas import TurnRequest, TurnResponse
 
-from .vla_service import MockVLAService
+from .vla_client import VLAServiceClient
 
 logger = logging.getLogger(__name__)
 
@@ -23,23 +23,14 @@ logger = logging.getLogger(__name__)
 class TurnService:
     """Service for managing battle turns and episode generation"""
 
-    # TODO: Refactor to use Protocol/ABC for VLA service interface
-    # Current design tightly couples TurnService to MockVLAService.
-    # When implementing real VLA service (Phase 2), refactor to:
-    # 1. Define VLAService Protocol/ABC with generate_episode() interface
-    # 2. Remove default MockVLAService() instantiation
-    # 3. Require VLA service injection via __init__ (no default)
-    # 4. Update API router to inject concrete implementation
-    # This enables clean dependency injection and easier testing.
-
-    def __init__(self, vla_service: MockVLAService | None = None):
+    def __init__(self, vla_client: VLAServiceClient):
         """
         Initialize turn service
 
         Args:
-            vla_service: VLA execution service (defaults to MockVLAService)
+            vla_client: VLA execution client for HTTP communication with VLA servers
         """
-        self.vla_service = vla_service or MockVLAService()
+        self.vla_service = vla_client
 
     async def create_turn(
         self,
@@ -215,8 +206,8 @@ class TurnService:
         """
         logger.info(f"Executing {model_id} ({side}) for turn {turn.turn_id}")
 
-        # Execute VLA model
-        episode_data = self.vla_service.generate_episode(
+        # Execute VLA model via HTTP
+        episode_data = await self.vla_service.generate_episode(
             model_id=model_id,
             instruction=instruction,
             robot_id=session.robot_id,
