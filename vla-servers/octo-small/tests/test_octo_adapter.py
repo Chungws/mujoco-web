@@ -150,10 +150,7 @@ class TestOctoSmallAdapterIntegration:
     Run with: pytest --run-integration
     """
 
-    @pytest.mark.skipif(
-        "not config.getoption('--run-integration', default=False)",
-        reason="Integration tests disabled by default (use --run-integration)",
-    )
+    @pytest.mark.integration
     def test_load_model_success(self):
         """Test model loading from HuggingFace"""
         adapter = OctoSmallAdapter()
@@ -172,10 +169,7 @@ class TestOctoSmallAdapterIntegration:
         with pytest.raises(ValueError, match="model_id cannot be empty"):
             adapter.load_model(model_id="", device="cpu", cache_dir="/tmp")
 
-    @pytest.mark.skipif(
-        "not config.getoption('--run-integration', default=False)",
-        reason="Integration tests disabled by default",
-    )
+    @pytest.mark.integration
     def test_full_inference_pipeline(self, sample_observation, sample_instruction):
         """Test full inference pipeline (load → preprocess → predict → postprocess)"""
         adapter = OctoSmallAdapter()
