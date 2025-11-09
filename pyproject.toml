@@ -76,5 +76,6 @@ dev = [
     "mongomock-motor>=0.0.36",
     # Integration Test Dependencies
     "requests>=2.32.5",
+    "respx>=0.22.0",
 ]
 
