@@ -22,6 +22,24 @@ A web-based arena for blind A/B testing of VLA models in MuJoCo-simulated robot 
 
 ## 🔴 CRITICAL RULES
 
+### 0. Skill Checker - ALWAYS CHECK FIRST
+
+**Before EVERY git or development task:**
+```bash
+Skill(skill="skill-checker")
+```
+
+The `skill-checker` skill is a **map** that tells you which other skills to check for any given task.
+
+**Examples:**
+- User says "브랜치 만들어줘" → Check `skill-checker` first → It says check `git-branching`
+- User says "커밋해줘" → Check `skill-checker` first → It says check `committing-changes`
+- User says "PR 만들어줘" → Check `skill-checker` first → It says check `creating-pull-requests`
+
+**NEVER skip this step.** Even if you think you remember the rules, check the skill.
+
+---
+
 ### 1. Branch Safety
 
 **ALWAYS check current branch before ANY work:**
@@ -137,6 +155,7 @@ Use these skills for specialized workflows:
 
 | Skill | Purpose |
 |-------|---------|
+| `skill-checker` | 🔴 **CHECK FIRST**: Determines which skills to invoke for any task |
 | `alembic-migrations` | Database migration management (ALWAYS use --autogenerate) |
 | `backend-tdd-workflow` | TDD workflow (Red-Green-Refactor, pytest, AAA pattern) |
 | `committing-changes` | Git commit format (`<type>: <subject>`, Co-authored-by) |
@@ -146,6 +165,7 @@ Use these skills for specialized workflows:
 | `git-branching` | Git Flow branching (feature/*, develop, main) |
 | `managing-python-deps` | uv dependency management (NEVER use pip) |
 | `nextjs-rsc-patterns` | Next.js RSC patterns (page.tsx async, *-client.tsx) |
+| `pr-splitting-strategy` | Split large PRs into reviewable chunks (<300 lines) |
 | `reviewing-code` | Self code review checklist (before MR) |
 | `sqlmodel-no-foreign-keys` | Database modeling with NO FKs (ADR-001) |
 | `using-shadcn-components` | shadcn/ui components (NEVER edit components/ui/) |
