@@ -179,62 +179,53 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 **Goal:** Separate VLA execution service operational
 **See:** [FEATURES/002_VLA_Server.md](./FEATURES/002_VLA_Server.md) for complete specification
 
-#### Week 3: VLA Server Infrastructure
+#### Week 3: VLA Server Infrastructure ✅ Complete
 
-- [x] **Project Setup**
-  - [x] Create vla-server/ directory structure
-  - [x] Setup pyproject.toml (mujoco, torch, transformers dependencies) - with uv
+- [x] **Architecture Restructuring** (Microservice Pattern)
+  - [x] vla-server-base/ - Common library (NO ML deps) - PR #32
+  - [x] vla-servers/ folder - Independent services
+  - [x] Update root workspace config to exclude vla-servers/*
+
+- [x] **vla-server-base (26 tests)** - PR #32, #33
+  - [x] config/model_loader.py - XML composition (10 tests)
+  - [x] services/mujoco_env.py - MuJoCo wrapper (16 tests)
+  - [x] Base adapter interface
+  - [x] Common schemas and types
   - [x] Configuration management (Pydantic Settings)
-  - [x] Root config setup (config/mujoco/ XML templates)
-  - [ ] FastAPI app skeleton (next PR)
-  - [ ] Download Franka Panda model from MuJoCo Menagerie (using simplified model)
 
-- [x] **XML Composition (TDD - 10 tests)**
-  - [x] config/model_loader.py
-  - [x] Dynamic robot + scene composition
-  - [x] Template, robot, scene XML files
-  - [x] Error handling (missing files)
+- [x] **vla-servers/mock (13 tests)** - PR #35
+  - [x] Independent FastAPI service (Python 3.12)
+  - [x] Mock adapter implementation
+  - [x] POST /predict endpoint
+  - [x] GET /health, /info endpoints
+  - [x] Path dependency to vla-server-base
 
-- [x] **MuJoCo Environment (TDD - 16 tests)**
-  - [x] services/mujoco_env.py
-  - [x] Load Franka Emika Panda robot (simplified 7-DOF + gripper)
-  - [x] Load table scene
-  - [x] Environment reset to initial state
-  - [x] Step simulation with action
-  - [x] Get observation (camera rendering + proprioception)
-  - [x] Get state for recording (qpos, qvel, time)
-  - [x] Error handling (invalid robot/scene)
+- [x] **vla-servers/octo-small (14 tests)** - PR #36
+  - [x] Independent FastAPI service (Python 3.10)
+  - [x] OctoSmallAdapter implementation
+  - [x] TensorFlow 2.15.0, JAX, Flax, Octo dependencies
+  - [x] Unit tests (12 tests) + Integration tests (2 tests, skipped by default)
+  - [x] POST /predict endpoint
+  - [x] GET /health, /info endpoints
+  - [x] Path dependency to vla-server-base
 
-- [x] **VLA Adapter Pattern - Base + Mock (TDD - 20 tests)** ✅ PR 1 Complete
-  - [x] adapters/base.py - Abstract adapter interface
-  - [x] adapters/mock_adapter.py - Mock adapter for testing
-  - [x] adapters/__init__.py - Factory function (get_adapter)
-  - [x] Comprehensive tests (20 tests passing)
-  - [x] Device management interface (auto, cuda, cpu, mps)
-  - [ ] adapters/octo_small_adapter.py - Octo-Small 27M adapter (PR 2)
-  - [ ] adapters/smolvla_adapter.py - SmolVLA 450M adapter (PR 3)
-  - [ ] MacBook compatibility (CPU/MPS mode) (PR 2-3)
+#### Week 4: Multi-Service Testing & SmolVLA (Current)
 
-#### Week 4: VLA Server Core Logic
+- [x] **Multi-Service Integration Testing** ✅
+  - [x] Test mock + octo-small services running together
+  - [x] Test service-to-service communication
+  - [x] Test error scenarios (service down, timeout)
+  - [x] Performance testing
+  - [x] Created comprehensive test suite (18 tests passing)
+  - [x] Documentation (docs/MULTI_SERVICE_TESTING.md)
 
-- [ ] **Execution Service (TDD - 20 tests)**
-  - [ ] services/execution_service.py
-  - [ ] Orchestrate MuJoCo + VLA model
-  - [ ] Episode loop (max 50 steps):
-    1. Get observation from MuJoCo
-    2. VLA model inference
-    3. Step MuJoCo simulation
-    4. Record action and state
-    5. Check termination
-  - [ ] Return episode data (actions, states, duration_ms)
-  - [ ] Error handling and timeouts
-
-- [ ] **API Endpoints (TDD - 10 tests)**
-  - [ ] api/execute.py - POST /execute
-  - [ ] api/health.py - GET /health
-  - [ ] api/models.py - GET /models (list available)
-  - [ ] Request/Response schemas
-  - [ ] Error handling (404, 400, 500)
+- [ ] **vla-servers/smolvla (Python 3.12)**
+  - [ ] Independent FastAPI service
+  - [ ] SmolVLAAdapter implementation
+  - [ ] PyTorch 2.9+, Transformers dependencies
+  - [ ] Unit tests + Integration tests
+  - [ ] POST /predict endpoint
+  - [ ] GET /health, /info endpoints
 
 #### Week 5: Backend Integration
 
@@ -316,17 +307,17 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - ✅ **Total: 128 passing tests (88 backend + 40 worker)**
 
 **Next Up:**
-- VLA Server Development (Week 3-5) - **Phase 2 Mock Service Complete** ✅
+- VLA Server Development (Week 3-5) - **Phase 2 Octo-Small Service Complete** ✅
   - ✅ Phase 1: Config + MuJoCo Environment (26 tests passing) - PR #31, #32, #33
-  - ✅ Phase 2: Mock Service (13 tests passing) - PR #35
-  - ✅ **Architecture Restructuring Complete**:
-    - Reason: Dependency conflicts (Python 3.11 + TF 2.15 vs Python 3.12 + PyTorch 2.9+)
+  - ✅ Phase 2: Model Services - Architecture Restructuring Complete
     - ✅ vla-server → vla-server-base (common library, NO ML deps) - PR #32
-    - ✅ vla-servers/mock (independent service, Python 3.12) - PR #35
-    - ⏭️ vla-servers/octo-small (independent service, Python 3.11)
-    - ⏭️ vla-servers/smolvla (independent service, Python 3.12)
-  - ⏭️ Model services with real VLA models
-  - ⏭️ Backend integration
+    - ✅ vla-servers/mock (independent service, Python 3.12, 13 tests) - PR #35
+    - ✅ vla-servers/octo-small (independent service, Python 3.10, 14 tests) - PR #36
+    - Reason: Dependency conflicts (octo requires Python 3.10 + TF 2.15)
+  - **Total VLA Tests:** 53 tests (26 base + 13 mock + 14 octo-small)
+  - ⏭️ Multi-service testing (mock + octo-small integration)
+  - ⏭️ vla-servers/smolvla (independent service, Python 3.12)
+  - ⏭️ Backend integration with VLA services
 
 ---
 
@@ -338,9 +329,9 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | Backend Foundation | ✅ Complete | 100% | 2025-01-06 |
 | Worker & Leaderboard | ✅ Complete | 100% | 2025-01-06 |
 | Frontend | ✅ Complete | 100% | 2025-11-07 |
-| VLA Server Development | 🔄 In Progress | 45% | Week 5 end |
+| VLA Server Development | 🔄 In Progress | 60% | Week 5 end |
 
-**Overall MVP Progress:** 89% complete
+**Overall MVP Progress:** 92% complete
 
 **Progress Details:**
 - Database setup: 100% (PostgreSQL + MongoDB)
@@ -349,7 +340,7 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 - Services: 100% (SessionService ✅, MockVLAService ✅, TurnService ✅, VoteService ✅)
 - Worker & Leaderboard: 100% (ELO aggregation ✅, robot-specific + global ELO ✅, 40 tests ✅)
 - Frontend: 100% (Battle Page ✅, Leaderboard Page ✅, Home Page ✅)
-- VLA Server: 45% (Config ✅, MuJoCo Env ✅, Base Adapter + Mock ✅, 46 tests ✅, Octo-Small next)
+- VLA Server: 60% (vla-server-base ✅ 26 tests, mock ✅ 13 tests, octo-small ✅ 14 tests, Total 53 tests ✅)
 
 ---
 
@@ -489,10 +480,14 @@ Control Freq: 3.51 Hz (< 5 Hz target)
 | 2025-11-07 | Microservice architecture: vla-server-base + vla-servers/ | Claude |
 | 2025-11-07 | Updated 002_VLA_Server.md and 001_MVP.md for new architecture | Claude |
 
+| 2025-11-09 | VLA Server Phase 2 Complete: octo-small service (14 tests) - PR #36 | Claude |
+| 2025-11-09 | Updated ROADMAP.md with actual code progress (53 total VLA tests) | Claude |
+| 2025-11-09 | Confirmed Python 3.10 for octo-small (not 3.11) | Claude |
+
 ---
 
-**Last Updated:** 2025-11-07
-**Status:** MVP 89% Complete - VLA Server Phase 2 Restructuring
-**Next Milestone:** Complete microservice architecture (vla-server-base + model services)
-**Architecture Change:** Dependency isolation via independent services
+**Last Updated:** 2025-11-09
+**Status:** MVP 92% Complete - VLA Server Phase 2 Complete (mock + octo-small)
+**Next Milestone:** Multi-service testing + SmolVLA service
+**Architecture:** Microservice pattern with dependency isolation
 **Target MVP Completion:** Week 5

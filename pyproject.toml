@@ -68,4 +68,8 @@ filterwarnings = [
     # Ignore Pydantic v2.11 deprecation warnings (will be fixed in Beanie/dependencies)
     "ignore::pydantic.warnings.PydanticDeprecatedSince211",
 ]
+norecursedirs = [
+    "vla-servers",
+    "vla-server",
+]
 

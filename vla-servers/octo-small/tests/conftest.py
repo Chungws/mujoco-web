@@ -12,7 +12,7 @@ def pytest_addoption(parser):
         "--run-integration",
         action="store_true",
         default=False,
-        help="Run integration tests that download models",
+        help="Run integration tests that require running services",
     )
 
 
