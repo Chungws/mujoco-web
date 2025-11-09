@@ -6,7 +6,6 @@ Tests adapter interface implementation without loading actual model.
 
 import numpy as np
 import pytest
-
 from octo_service.adapters.octo_small_adapter import OctoSmallAdapter
 
 
@@ -34,12 +33,12 @@ class TestOctoSmallAdapterInterface:
         image = processed["image_primary"]
         assert image.shape == (1, 1, 256, 256, 3)  # [batch, time, H, W, C]
         assert image.dtype == np.float32
-        assert 0 <= image.min() and image.max() <= 1  # Normalized
+        assert image.min() >= 0 and image.max() <= 1  # Normalized
 
         mask = processed["timestep_pad_mask"]
         assert mask.shape == (1, 1)
         assert mask.dtype == bool
-        assert mask[0, 0] == True  # Valid observation
+        assert mask[0, 0]  # Valid observation
 
     def test_preprocess_observation_missing_keys(self):
         """Test preprocessing fails with missing keys"""
@@ -160,9 +159,7 @@ class TestOctoSmallAdapterIntegration:
         adapter = OctoSmallAdapter()
 
         # This will download ~100MB model
-        adapter.load_model(
-            model_id="octo-small", device="cpu", cache_dir="/tmp/octo_test_cache"
-        )
+        adapter.load_model(model_id="octo-small", device="cpu", cache_dir="/tmp/octo_test_cache")
 
         assert adapter.model is not None
         assert adapter.model_id == "octo-small"
@@ -184,9 +181,7 @@ class TestOctoSmallAdapterIntegration:
         adapter = OctoSmallAdapter()
 
         # Load model
-        adapter.load_model(
-            model_id="octo-small", device="cpu", cache_dir="/tmp/octo_test_cache"
-        )
+        adapter.load_model(model_id="octo-small", device="cpu", cache_dir="/tmp/octo_test_cache")
 
         # Preprocess
         processed_obs = adapter.preprocess_observation(sample_observation)
@@ -205,13 +200,3 @@ class TestOctoSmallAdapterIntegration:
         assert len(action) == 8
         assert all(isinstance(v, float) for v in action)
         assert action[7] == 0.0  # Gripper padded
-
-
-def pytest_addoption(parser):
-    """Add --run-integration option to pytest"""
-    parser.addoption(
-        "--run-integration",
-        action="store_true",
-        default=False,
-        help="Run integration tests that download models",
-    )
