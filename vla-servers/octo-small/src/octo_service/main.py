@@ -5,6 +5,10 @@ Provides:
 - POST /predict: VLA inference
 - GET /health: Health check
 - GET /info: Model information
+
+Note:
+    Must run uvicorn with --loop asyncio flag to avoid orbax/uvloop conflict.
+    See README.md for details.
 """
 
 from typing import Any
@@ -119,4 +123,6 @@ async def info() -> dict[str, Any]:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    # Use asyncio loop instead of uvloop to avoid nest_asyncio conflicts
+    # orbax.checkpoint applies nest_asyncio which conflicts with uvloop
+    uvicorn.run(app, host="0.0.0.0", port=8002, loop="asyncio")

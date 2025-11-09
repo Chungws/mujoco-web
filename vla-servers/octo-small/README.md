@@ -41,13 +41,33 @@ Expected output:
 
 ## Running
 
+**IMPORTANT**: Must use `--loop asyncio` flag to avoid orbax/uvloop conflict.
+
 ```bash
 # Development server (port 8002)
-uv run uvicorn octo_service.main:app --reload --port 8002
+uv run uvicorn octo_service.main:app --reload --port 8002 --loop asyncio
 
 # Production
-uv run uvicorn octo_service.main:app --host 0.0.0.0 --port 8002
+uv run uvicorn octo_service.main:app --host 0.0.0.0 --port 8002 --loop asyncio
 ```
+
+### Why `--loop asyncio`?
+
+`orbax.checkpoint` (used by Octo) automatically applies `nest_asyncio` on import to support nested asyncio operations. However, `nest_asyncio` cannot patch `uvloop` (uvicorn's default event loop), only standard `asyncio` loops.
+
+Using `--loop asyncio` forces uvicorn to use the standard asyncio event loop instead of uvloop, which:
+- Is compatible with nest_asyncio patching
+- Has minimal performance impact for this use case
+- Is the recommended solution for orbax/nest_asyncio compatibility
+
+**Error without flag:**
+```
+ValueError: Can't patch loop of type <class 'uvloop.Loop'>
+```
+
+**References:**
+- [nest_asyncio limitations](https://github.com/erdewit/nest_asyncio#limitations)
+- [Similar issues in other projects](https://github.com/NVIDIA/NeMo-Guardrails/issues/112)
 
 ## API Endpoints
 
