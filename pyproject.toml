@@ -2,7 +2,7 @@
 name = "vlaarena"
 version = "0.1.0"
 description = "AI Language Model Battle Arena - Workspace Root"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "MIT" }
 dependencies = []
