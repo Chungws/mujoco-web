@@ -2,7 +2,7 @@
 name = "vlaarena-backend"
 version = "0.1.0"
 description = "FastAPI backend for vlaarena"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.115.12",
     "uvicorn[standard]>=0.34.0",
