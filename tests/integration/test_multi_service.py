@@ -124,10 +124,7 @@ class TestMultiServicePrediction:
     async def test_mock_service_prediction(self):
         """Test mock service prediction endpoint"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
             response = await client.post(f"{MOCK_SERVICE_URL}/predict", json=payload)
             assert response.status_code == 200
             data = response.json()
@@ -138,10 +135,7 @@ class TestMultiServicePrediction:
     async def test_octo_small_service_prediction(self):
         """Test octo-small service prediction endpoint"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
             response = await client.post(f"{OCTO_SMALL_SERVICE_URL}/predict", json=payload)
             assert response.status_code == 200
             data = response.json()
@@ -152,10 +146,7 @@ class TestMultiServicePrediction:
     async def test_all_services_prediction_concurrent(self):
         """Test all services prediction endpoints concurrently"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
             tasks = [
                 client.post(f"{MOCK_SERVICE_URL}/predict", json=payload),
                 client.post(f"{OCTO_SMALL_SERVICE_URL}/predict", json=payload),
@@ -173,10 +164,7 @@ class TestMultiServicePrediction:
     async def test_different_models_different_actions(self):
         """Test that different models produce different actions"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
 
             # Get predictions from both services
             mock_response = await client.post(f"{MOCK_SERVICE_URL}/predict", json=payload)
@@ -199,9 +187,7 @@ class TestMultiServiceErrorScenarios:
     async def test_invalid_request_missing_instruction(self):
         """Test prediction with missing instruction field"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"xml_string": SAMPLE_XML}
 
             # Test both services
             for url in [MOCK_SERVICE_URL, OCTO_SMALL_SERVICE_URL]:
@@ -211,9 +197,7 @@ class TestMultiServiceErrorScenarios:
     async def test_invalid_request_missing_xml(self):
         """Test prediction with missing xml_string field"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION}
 
             # Test both services
             for url in [MOCK_SERVICE_URL, OCTO_SMALL_SERVICE_URL]:
@@ -223,10 +207,7 @@ class TestMultiServiceErrorScenarios:
     async def test_invalid_xml_format(self):
         """Test prediction with invalid XML"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": "invalid xml <>"
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": "invalid xml <>"}
 
             # Test both services - should handle error gracefully
             for url in [MOCK_SERVICE_URL, OCTO_SMALL_SERVICE_URL]:
@@ -242,10 +223,7 @@ class TestMultiServicePerformance:
     async def test_mock_service_response_time(self):
         """Test mock service response time"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
 
             start = time.time()
             response = await client.post(f"{MOCK_SERVICE_URL}/predict", json=payload)
@@ -258,10 +236,7 @@ class TestMultiServicePerformance:
     async def test_octo_small_service_response_time(self):
         """Test octo-small service response time (baseline)"""
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
 
             start = time.time()
             response = await client.post(f"{OCTO_SMALL_SERVICE_URL}/predict", json=payload)
@@ -274,10 +249,7 @@ class TestMultiServicePerformance:
     async def test_concurrent_predictions_performance(self):
         """Test performance of concurrent predictions"""
         async with httpx.AsyncClient(timeout=60.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
 
             # Run 5 predictions concurrently on each service
             tasks = []
@@ -306,10 +278,7 @@ class TestServiceCommunicationPatterns:
         services = [MOCK_SERVICE_URL, OCTO_SMALL_SERVICE_URL]
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
 
             # Send 10 requests in round-robin
             results = []
@@ -317,10 +286,7 @@ class TestServiceCommunicationPatterns:
                 service_url = services[i % len(services)]
                 response = await client.post(f"{service_url}/predict", json=payload)
                 assert response.status_code == 200
-                results.append({
-                    "service": service_url,
-                    "action": response.json()["action"]
-                })
+                results.append({"service": service_url, "action": response.json()["action"]})
 
             # Should have used both services
             mock_count = sum(1 for r in results if r["service"] == MOCK_SERVICE_URL)
@@ -331,10 +297,7 @@ class TestServiceCommunicationPatterns:
     async def test_failover_scenario(self):
         """Test failover when one service is slow/unavailable"""
         async with httpx.AsyncClient(timeout=2.0) as client:
-            payload = {
-                "instruction": SAMPLE_INSTRUCTION,
-                "xml_string": SAMPLE_XML
-            }
+            payload = {"instruction": SAMPLE_INSTRUCTION, "xml_string": SAMPLE_XML}
 
             # Try to call a non-existent service (should fail)
             try:

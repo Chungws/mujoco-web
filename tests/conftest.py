@@ -3,7 +3,6 @@ Pytest configuration for root-level tests
 """
 
 
-
 def pytest_addoption(parser):
     """Add --run-integration option to pytest"""
     parser.addoption(
