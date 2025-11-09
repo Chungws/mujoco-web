@@ -9,6 +9,7 @@ from typing import Any
 
 import jax
 import numpy as np
+from octo.model.octo_model import OctoModel
 from PIL import Image
 from vla_server_base import VLAModelAdapter
 
@@ -55,9 +56,6 @@ class OctoSmallAdapter(VLAModelAdapter):
         """
         if not model_id:
             raise ValueError("model_id cannot be empty")
-
-        # Import here to avoid loading at module level
-        from octo.model.octo_model import OctoModel
 
         try:
             # Detect available JAX devices
