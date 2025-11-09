@@ -13,7 +13,6 @@ Run with: pytest tests/integration/ --run-integration -v
 
 import asyncio
 import time
-from typing import Dict, List
 
 import httpx
 import pytest
@@ -340,7 +339,7 @@ class TestServiceCommunicationPatterns:
             # Try to call a non-existent service (should fail)
             try:
                 await client.post("http://localhost:9999/predict", json=payload)
-                assert False, "Should have raised exception"
+                raise AssertionError("Should have raised exception")
             except (httpx.ConnectError, httpx.TimeoutException):
                 pass  # Expected
 

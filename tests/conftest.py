@@ -2,7 +2,6 @@
 Pytest configuration for root-level tests
 """
 
-import pytest
 
 
 def pytest_addoption(parser):
