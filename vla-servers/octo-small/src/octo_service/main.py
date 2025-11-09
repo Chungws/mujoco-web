@@ -12,9 +12,9 @@ Note:
     See README.md for details.
 """
 
-import nest_asyncio
 from typing import Any
 
+import nest_asyncio
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from vla_server_base import MuJoCoEnvironment
