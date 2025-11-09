@@ -10,23 +10,29 @@ from vla_server_base.config.model_loader import get_model_xml
 class TestModelLoader:
     """Test XML composition logic"""
 
-    def test_compose_valid_model(self, robot_id, scene_id):
+    def test_compose_valid_model(self):
         """Test composing valid robot + scene"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         assert xml is not None
         assert isinstance(xml, str)
         assert len(xml) > 0
 
-    def test_xml_contains_model_name(self, robot_id, scene_id):
+    def test_xml_contains_model_name(self):
         """Test XML contains correct model name"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         expected_name = f"{robot_id}_{scene_id}"
         assert f'model="{expected_name}"' in xml
 
-    def test_xml_contains_robot_elements(self, robot_id, scene_id):
+    def test_xml_contains_robot_elements(self):
         """Test XML contains robot-specific elements"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         # Franka-specific elements
@@ -34,8 +40,10 @@ class TestModelLoader:
         assert "joint1" in xml
         assert "gripper" in xml
 
-    def test_xml_contains_scene_elements(self, robot_id, scene_id):
+    def test_xml_contains_scene_elements(self):
         """Test XML contains scene-specific elements"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         # Table scene elements
@@ -43,8 +51,10 @@ class TestModelLoader:
         assert "table_top" in xml
         assert "red_cube" in xml
 
-    def test_xml_contains_template_elements(self, robot_id, scene_id):
+    def test_xml_contains_template_elements(self):
         """Test XML contains template elements"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         # Template elements
@@ -53,8 +63,10 @@ class TestModelLoader:
         assert "<light" in xml
         assert "floor" in xml
 
-    def test_xml_is_valid_structure(self, robot_id, scene_id):
+    def test_xml_is_valid_structure(self):
         """Test XML has valid MuJoCo structure"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         # Check basic structure
@@ -63,25 +75,31 @@ class TestModelLoader:
         assert "<worldbody>" in xml
         assert "</worldbody>" in xml
 
-    def test_invalid_robot_raises_error(self, scene_id):
+    def test_invalid_robot_raises_error(self):
         """Test invalid robot ID raises FileNotFoundError"""
+        scene_id = "table"
         with pytest.raises(FileNotFoundError, match="Robot not found"):
             get_model_xml("invalid_robot", scene_id)
 
-    def test_invalid_scene_raises_error(self, robot_id):
+    def test_invalid_scene_raises_error(self):
         """Test invalid scene ID raises FileNotFoundError"""
+        robot_id = "franka"
         with pytest.raises(FileNotFoundError, match="Scene not found"):
             get_model_xml(robot_id, "invalid_scene")
 
-    def test_xml_has_actuators(self, robot_id, scene_id):
+    def test_xml_has_actuators(self):
         """Test XML includes robot actuators"""
+        robot_id = "franka"
+        scene_id = "table"
         xml = get_model_xml(robot_id, scene_id)
 
         assert "<actuator>" in xml or "<actuator" in xml
         assert "motor" in xml.lower()
 
-    def test_xml_composition_deterministic(self, robot_id, scene_id):
+    def test_xml_composition_deterministic(self):
         """Test XML composition is deterministic"""
+        robot_id = "franka"
+        scene_id = "table"
         xml1 = get_model_xml(robot_id, scene_id)
         xml2 = get_model_xml(robot_id, scene_id)
 

@@ -7,20 +7,6 @@ readme = "README.md"
 license = { text = "MIT" }
 dependencies = []
 
-[project.optional-dependencies]
-dev = [
-    # Testing
-    "pytest>=8.3.5",
-    "pytest-asyncio>=0.25.2",
-    "pytest-cov>=6.0.0",
-    # Linting & Formatting
-    "ruff>=0.9.2",
-    # Test Database & Async Support
-    "aiosqlite>=0.21.0",
-    "greenlet>=3.2.4",
-    "mongomock-motor>=0.0.36",
-]
-
 [tool.uv.workspace]
 members = [
     "backend",
@@ -64,6 +50,9 @@ ignore = [
 ]
 
 [tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+]
 filterwarnings = [
     # Ignore Pydantic v2.11 deprecation warnings (will be fixed in Beanie/dependencies)
     "ignore::pydantic.warnings.PydanticDeprecatedSince211",
@@ -71,5 +60,21 @@ filterwarnings = [
 norecursedirs = [
     "vla-servers",
     "vla-server",
+]
+
+[dependency-groups]
+dev = [
+    # Testing
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.2",
+    "pytest-cov>=6.0.0",
+    # Linting & Formatting
+    "ruff>=0.9.2",
+    # Test Database & Async Support
+    "aiosqlite>=0.21.0",
+    "greenlet>=3.2.4",
+    "mongomock-motor>=0.0.36",
+    # Integration Test Dependencies
+    "requests>=2.32.5",
 ]
 
