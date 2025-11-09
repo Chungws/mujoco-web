@@ -7,10 +7,12 @@ Provides:
 - GET /info: Model information
 
 Note:
-    Must run uvicorn with --loop asyncio flag to avoid orbax/uvloop conflict.
+    Requires nest_asyncio to allow orbax.checkpoint's nested asyncio.run() calls.
+    Must run uvicorn with --loop asyncio flag to avoid uvloop conflict.
     See README.md for details.
 """
 
+import nest_asyncio
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -18,6 +20,10 @@ from pydantic import BaseModel
 from vla_server_base import MuJoCoEnvironment
 
 from octo_service.adapters.octo_small_adapter import OctoSmallAdapter
+
+# Apply nest_asyncio to allow nested asyncio.run() calls
+# This is required by orbax.checkpoint which calls asyncio.run() during model loading
+nest_asyncio.apply()
 
 app = FastAPI(
     title="Octo-Small VLA Service",

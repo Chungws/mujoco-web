@@ -53,21 +53,31 @@ uv run uvicorn octo_service.main:app --host 0.0.0.0 --port 8002 --loop asyncio
 
 ### Why `--loop asyncio`?
 
-`orbax.checkpoint` (used by Octo) automatically applies `nest_asyncio` on import to support nested asyncio operations. However, `nest_asyncio` cannot patch `uvloop` (uvicorn's default event loop), only standard `asyncio` loops.
+This service requires both:
+1. **`nest_asyncio.apply()` in code** (main.py:26) - Allows nested `asyncio.run()` calls
+2. **`--loop asyncio` flag** - Uses standard asyncio instead of uvloop
 
-Using `--loop asyncio` forces uvicorn to use the standard asyncio event loop instead of uvloop, which:
-- Is compatible with nest_asyncio patching
-- Has minimal performance impact for this use case
-- Is the recommended solution for orbax/nest_asyncio compatibility
+**Why both are needed:**
 
-**Error without flag:**
+`orbax.checkpoint` (used by Octo) calls `asyncio.run()` during model loading, even when already inside an async context (FastAPI startup). This requires `nest_asyncio` to patch the event loop.
+
+However, `nest_asyncio` can only patch standard `asyncio` event loops, not `uvloop` (uvicorn's default). Therefore:
+- Code calls `nest_asyncio.apply()` to enable nested asyncio.run()
+- CLI uses `--loop asyncio` to avoid uvloop incompatibility
+
+**Errors without these fixes:**
 ```
+# Without nest_asyncio.apply()
+RuntimeError: asyncio.run() cannot be called from a running event loop
+
+# Without --loop asyncio (with nest_asyncio)
 ValueError: Can't patch loop of type <class 'uvloop.Loop'>
 ```
 
 **References:**
 - [nest_asyncio limitations](https://github.com/erdewit/nest_asyncio#limitations)
 - [Similar issues in other projects](https://github.com/NVIDIA/NeMo-Guardrails/issues/112)
+- [orbax async issues](https://github.com/google/orbax/issues/708)
 
 ## API Endpoints
 
