@@ -1,12 +1,12 @@
 # Feature: VLA Execution Server
 
-**Status:** Week 3-4 - Phase 2 Mock Service Complete
+**Status:** Week 3-4 - Phase 2 Mock + Octo-Small Services Complete
 **Priority:** HIGH
 **Timeline:** Week 3-5 (3 weeks)
 **Target Date:** Week 5 completion
 **Related ADR:** [ADR-003: VLA Server Separation](../ARCHITECTURE/ADR_003-VLA_Server_Separation.md)
 **Phase 1 Progress:** 26/26 tests passing (config + MuJoCo env)
-**Phase 2 Progress:** Mock service complete (13 tests passing) ✅ PR #35
+**Phase 2 Progress:** Mock + Octo-Small services complete (13 + 12 tests passing) ✅ PR #35, PR #36
 **Architecture:** Microservice (vla-server-base + independent model services)
 
 ---
@@ -1065,19 +1065,19 @@ async def get_server_info():
 - [x] Stateless MuJoCo environment (16 tests) ✅ Phase 1
 - [x] VLA adapter base class ✅ Phase 2 PR 1
 - [x] Mock adapter (20 tests) ✅ Phase 2 PR 1
-- [ ] **Architecture Restructuring** (Phase 2 Reboot)
+- [x] **Architecture Restructuring** (Phase 2 Reboot) ✅
   - [x] vla-server → vla-server-base (remove ML deps) ✅ PR #32
   - [x] Create vla-servers/ folder ✅ PR #35
   - [x] vla-servers/mock service ✅ PR #35
-  - [ ] vla-servers/octo-small service (Python 3.11)
+  - [x] vla-servers/octo-small service (Python 3.10, TensorFlow 2.15.0) ✅ PR #36
   - [x] Update root workspace config ✅ PR #32
 
 ### Week 4: Model Integration & Testing
-- [ ] Each service with FastAPI app
-- [ ] Complete OctoSmallAdapter implementation
-- [ ] Service-specific tests (per service)
+- [x] Each service with FastAPI app ✅ PR #36 (octo-small complete)
+- [x] Complete OctoSmallAdapter implementation ✅ PR #36
+- [x] Service-specific tests (per service) ✅ PR #36 (12 unit tests)
 - [ ] Multi-service testing (mock + octo-small)
-- [ ] Error handling & validation
+- [x] Error handling & validation ✅ PR #36
 
 ### Week 5: SmolVLA & Optimization
 - [ ] vla-servers/smolvla service (Python 3.12)
