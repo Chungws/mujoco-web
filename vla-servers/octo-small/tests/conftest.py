@@ -6,16 +6,6 @@ import numpy as np
 import pytest
 
 
-def pytest_addoption(parser):
-    """Add --run-integration option to pytest"""
-    parser.addoption(
-        "--run-integration",
-        action="store_true",
-        default=False,
-        help="Run integration tests that download models",
-    )
-
-
 @pytest.fixture
 def sample_observation():
     """Sample MuJoCo observation"""

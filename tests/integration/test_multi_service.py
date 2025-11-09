@@ -7,6 +7,8 @@ service communication patterns, error scenarios, and performance.
 Prerequisites:
 - Mock service running on http://localhost:8001
 - Octo-Small service running on http://localhost:8002
+
+Run with: pytest tests/integration/ --run-integration -v
 """
 
 import asyncio
@@ -23,6 +25,12 @@ OCTO_SMALL_SERVICE_URL = "http://localhost:8002"
 # Test data
 SAMPLE_XML = "<mujoco><worldbody><body name='test' pos='0 0 0'><geom type='sphere' size='0.1'/></body></worldbody></mujoco>"
 SAMPLE_INSTRUCTION = "Pick up the red cube"
+
+
+pytestmark = pytest.mark.skipif(
+    "not config.getoption('--run-integration', default=False)",
+    reason="Integration tests disabled by default (use --run-integration to enable)",
+)
 
 
 @pytest.mark.asyncio
