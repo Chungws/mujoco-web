@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from vlaarena_shared.schemas import TurnRequest, TurnResponse
 
 from vlaarena_backend.database import get_db
+from vlaarena_backend.dependencies import get_vla_client
 from vlaarena_backend.services.turn_service import TurnService
+from vlaarena_backend.services.vla_client import VLAServiceClient
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,7 @@ async def create_turn(
     battle_id: str,
     data: TurnRequest,
     db: AsyncSession = Depends(get_db),
+    vla_client: VLAServiceClient = Depends(get_vla_client),
 ):
     """
     Create a new turn in a battle with VLA execution
@@ -32,7 +35,7 @@ async def create_turn(
     Flow:
     1. User provides instruction for existing battle
     2. System creates Turn record
-    3. System executes both VLA models (left and right) in parallel
+    3. System executes both VLA models (left and right) via HTTP to VLA servers
     4. System stores episodes in MongoDB
     5. Returns turn_id and episode_ids
 
@@ -40,6 +43,7 @@ async def create_turn(
         battle_id: Existing battle ID
         data: Turn request with instruction
         db: Database session
+        vla_client: VLA service HTTP client (injected)
 
     Returns:
         TurnResponse with turn_id, left_episode_id, right_episode_id, status
@@ -49,7 +53,7 @@ async def create_turn(
         HTTPException 500: If VLA execution or internal error occurs
     """
     try:
-        turn_service = TurnService()
+        turn_service = TurnService(vla_client=vla_client)
         result = await turn_service.create_turn(battle_id, data, db)
         return result
 

@@ -355,9 +355,9 @@ class TestTurnAPIErrorHandling:
         assert init_response.status_code == 201
         battle_id = init_response.json()["battle_id"]
 
-        # Act: Mock VLA service to simulate failure
+        # Act: Mock VLA client to simulate failure
         with patch(
-            "vlaarena_backend.services.turn_service.MockVLAService.generate_episode",
+            "vlaarena_backend.services.vla_client.VLAServiceClient.generate_episode",
             side_effect=Exception("VLA inference failed"),
         ):
             response = client.post(
