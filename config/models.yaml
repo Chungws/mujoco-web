@@ -16,22 +16,44 @@
 # - status: "active" or "inactive" (inactive models won't be used in battles)
 
 models:
-  # MVP Configuration: 2 VLA models for WidowX robot
+  # MVP Configuration: VLA models for testing
 
-  - id: openvla-7b
-    name: OpenVLA 7B
-    model: openvla/openvla-7b
-    base_url: http://localhost:8001  # Mock VLA service
+  # Mock service for development/testing
+  - id: mock-vla
+    name: Mock VLA
+    model: mock-vla
+    base_url: http://localhost:8001  # Mock VLA service (port 8001)
     api_key_env: null
-    organization: OpenVLA Team
+    organization: VLA Arena Team
     license: open-source
     status: active
 
-  - id: octo-base
-    name: Octo Base
-    model: octo-base
-    base_url: http://localhost:8001  # Mock VLA service
+  # Octo-Small service (27M parameters)
+  - id: octo-small
+    name: Octo Small
+    model: octo-small
+    base_url: http://localhost:8002  # Octo-Small VLA service (port 8002)
     api_key_env: null
     organization: UC Berkeley
     license: open-source
     status: active
+
+  # Test model IDs (for backward compatibility with existing tests)
+  # These point to mock-vla service for testing
+  - id: openvla-7b
+    name: OpenVLA 7B
+    model: openvla/openvla-7b
+    base_url: http://localhost:8001  # Mock VLA service for testing
+    api_key_env: null
+    organization: OpenVLA Team
+    license: open-source
+    status: active  # Active for testing
+
+  - id: octo-base
+    name: Octo Base
+    model: octo-base
+    base_url: http://localhost:8001  # Mock VLA service for testing
+    api_key_env: null
+    organization: UC Berkeley
+    license: open-source
+    status: active  # Active for testing
