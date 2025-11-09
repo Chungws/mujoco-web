@@ -21,6 +21,12 @@ class VLAModelAdapter(ABC):
     - Action postprocessing (standardize to 8-dim format)
     """
 
+    def __init__(self):
+        """Initialize adapter with common state"""
+        self.model_id: str | None = None
+        self.device: str | None = None
+        self.model_loaded: bool = False
+
     @abstractmethod
     def load_model(self, model_id: str, device: str, cache_dir: str) -> None:
         """
@@ -94,18 +100,21 @@ class VLAModelAdapter(ABC):
     @abstractmethod
     def postprocess_action(self, raw_action: Any) -> list[float]:
         """
-        Postprocess model output to standard 8-dim action
+        Postprocess model output to standardized action format
 
         Args:
             raw_action: Raw model output (from predict)
 
         Returns:
-            8-dim action list: [j1, j2, j3, j4, j5, j6, j7, gripper]
-            - j1-j7: Joint positions/velocities (robot-specific)
-            - gripper: Gripper open/close (0.0 = closed, 1.0 = open)
+            Action list with variable dimensions (model-specific)
+            - Robot arm models: typically 7-8 dim [j1, ..., j7, gripper]
+            - Humanoid models: typically 20-30 dim [j1, ..., j_n]
+            - Dimension determined by model architecture and target robot
 
         Note:
-            - Some models output 7-dim (no gripper) - pad with 0.0
-            - Some models output different action spaces - normalize to [-1, 1]
+            - MuJoCo environment automatically handles dimension mismatch:
+              * If len(action) > num_actuators: truncates to model.nu
+              * If len(action) < num_actuators: pads remaining with zeros
+            - Models should normalize actions to appropriate range (typically [-1, 1])
         """
         pass

@@ -227,7 +227,20 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [ ] POST /predict endpoint
   - [ ] GET /health, /info endpoints
 
-#### Week 5: Backend Integration
+#### Week 5: Backend Integration (Current - In Progress)
+
+- [x] **VLA Server Base Infrastructure**
+  - [x] Common library (vla-server-base) with app factory pattern
+  - [x] Shared schemas (PredictRequest, PredictResponse)
+  - [x] EpisodeExecutor service for stateless episode generation
+  - [x] Comprehensive tests (520 tests: app_factory + episode_executor)
+  - [x] Applied to mock and octo-small services
+
+- [x] **Test Code Consistency**
+  - [x] Unified integration test markers (@pytest.mark.integration)
+  - [x] Class-based test structure across all test files
+  - [x] pytest_collection_modifyitems hook for integration tests
+  - [x] Refactored test_mongodb_models.py to class-based (TestEpisodeCRUD, TestEpisodeQueries, TestEpisodeDataStructures)
 
 - [ ] **Backend Updates**
   - [ ] Update TurnService to call VLA server via HTTP
