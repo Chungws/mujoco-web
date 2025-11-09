@@ -26,10 +26,8 @@ SAMPLE_XML = "<mujoco><worldbody><body name='test' pos='0 0 0'><geom type='spher
 SAMPLE_INSTRUCTION = "Pick up the red cube"
 
 
-pytestmark = pytest.mark.skipif(
-    "not config.getoption('--run-integration', default=False)",
-    reason="Integration tests disabled by default (use --run-integration to enable)",
-)
+# Mark all tests in this file as integration tests
+pytestmark = pytest.mark.integration
 
 
 @pytest.mark.asyncio

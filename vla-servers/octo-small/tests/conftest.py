@@ -16,6 +16,18 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_collection_modifyitems(config, items):
+    """Skip integration tests unless --run-integration is specified"""
+    if config.getoption("--run-integration"):
+        # When --run-integration is specified, run integration tests
+        return
+
+    skip_integration = pytest.mark.skip(reason="Need --run-integration option to run")
+    for item in items:
+        if "integration" in item.keywords:
+            item.add_marker(skip_integration)
+
+
 @pytest.fixture
 def sample_observation():
     """Sample MuJoCo observation"""

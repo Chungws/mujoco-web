@@ -236,11 +236,16 @@ Control Freq: 3.51 Hz (< 5 Hz target)
   - [x] Comprehensive tests (520 tests: app_factory + episode_executor)
   - [x] Applied to mock and octo-small services
 
-- [x] **Test Code Consistency**
+- [x] **Test Code Consistency Improvements**
   - [x] Unified integration test markers (@pytest.mark.integration)
   - [x] Class-based test structure across all test files
   - [x] pytest_collection_modifyitems hook for integration tests
   - [x] Refactored test_mongodb_models.py to class-based (TestEpisodeCRUD, TestEpisodeQueries, TestEpisodeDataStructures)
+
+- [x] **App Factory Pattern Application**
+  - [x] Applied app_factory to mock service (reduced from 205 to 122 lines)
+  - [x] Applied app_factory to octo-small service (reduced from 221 to 122 lines)
+  - [x] Consistent API structure across all VLA services
 
 - [ ] **Backend Updates**
   - [ ] Update TurnService to call VLA server via HTTP
