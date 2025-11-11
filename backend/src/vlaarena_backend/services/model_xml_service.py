@@ -27,11 +27,7 @@ class ModelXMLService:
         """
         if config_root is None:
             # Default: backend/src/vlaarena_backend/services -> project root/config/mujoco
-            config_root = (
-                Path(__file__).parent.parent.parent.parent.parent
-                / "config"
-                / "mujoco"
-            )
+            config_root = Path(__file__).parent.parent.parent.parent.parent / "config" / "mujoco"
         self.config_root = config_root
         logger.info(f"ModelXMLService initialized with config_root: {config_root}")
 

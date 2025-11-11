@@ -2,9 +2,9 @@
 Tests for MuJoCo XML composition utilities
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
 from vlaarena_shared.mujoco_xml import get_model_xml
 
 
